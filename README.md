@@ -23,7 +23,7 @@ Scripts to help LSIF developers. Featuring:
 | --verbose or -v   | false       |
 
 Example:
-`> node .\lib\graph.js -d 2 -v 10 15 20`
+`> node .\lib\graph.js -d 2 15`
 
 * The input file must be a `.json` file.
 * [ids] is the list of target ids
