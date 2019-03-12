@@ -32,4 +32,5 @@ Example:
 * The output will be a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph
 
 The following image was created using [Viz.js](http://viz-js.com/)
+
 ![graph example](example/example.png)
