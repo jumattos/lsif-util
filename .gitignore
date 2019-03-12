@@ -1,3 +1,9 @@
+# Default input
+lsif.json
+
+# JavaScript files
+lib
+
 # Logs
 logs
 *.log

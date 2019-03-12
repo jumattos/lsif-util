@@ -1,0 +1,17 @@
+{
+  "name": "lsif-util",
+  "version": "1.0.0",
+  "description": "Utility tools for LSIF",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jullyana Mattos Vycas",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^11.11.0"
+  }
+}
