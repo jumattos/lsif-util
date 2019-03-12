@@ -1,5 +1,5 @@
 # About
-Scripts to help LSIF developers. Featuring:
+Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blob/master/indexFormat/specification.md) developers. Featuring:
 
 * Graph visualization
 * [WIP] Quick search
