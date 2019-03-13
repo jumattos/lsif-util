@@ -33,4 +33,4 @@ Example:
 
 The following image was created using [Viz.js](http://viz-js.com/)
 
-![graph example](example/example.png)
+![graph example](images/graphviz.png)
