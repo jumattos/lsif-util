@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 let inputPath: string = "./lsif.json";
-let searchDepth: number = 1;
+let distance: number = 1;
 let verbose: boolean = false;
 let targetIds: string[] = [];
 
@@ -11,8 +11,8 @@ function main(argc: number, argv: string[]) {
             case "--inputPath": case "-p":
                 inputPath = argv[++i];
                 break;
-            case "--depth": case "-d":
-                searchDepth = parseInt(argv[++i]);
+            case "--distance": case "-d":
+                distance = parseInt(argv[++i]);
                 break;
             case "--verbose": case "-v":
                 verbose = true;
@@ -35,8 +35,8 @@ function graph(toolOutput: any[]) {
 
     let allEdges = toolOutput.filter(object => object.type === "edge");
     let idQeue: string[] = targetIds;
-    while(searchDepth > 0) {
-        searchDepth--;
+    while(distance > 0) {
+        distance--;
         targetIds = idQeue;
         idQeue = [];
 

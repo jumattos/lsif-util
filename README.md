@@ -14,22 +14,20 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 
 # Graph
 
-`> node .\lib\graph.js [options] [ids]`
+`> node .\lib\graph.js [options] targetVertices`
 
-| Option            | Default     |
-|-------------------|-------------|
-| --inputPath or -p | ./lsif.json |
-| --depth or -d     | 1           |
-| --verbose or -v   | false       |
+After the options, you should specify one or more `targetVertices`. These are vertices you are interested in and are guaranteed to show in the graph.
+
+| Option            | Default     | Description                                             |
+|-------------------|-------------|---------------------------------------------------------|
+| --inputPath or -p | ./lsif.json | Path to input file (JSON)                               |
+| --distance or -d  | 1           | Max distance between any vertex and the target vertices |
+| --verbose or -v   | false       | Display more information about the vertices             |
 
 Example:
 `> node .\lib\graph.js -d 2 15`
 
-* The input file must be a `.json` file.
-* [ids] is the list of target ids
-* The depth is how far from the listed ids we will look
-* The verbose option prints more information about the vertices
-* The output will be a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph
+The output will be a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
 
 The following image was created using [Viz.js](http://viz-js.com/)
 
