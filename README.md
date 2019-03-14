@@ -1,4 +1,6 @@
+
 # About
+
 Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blob/master/indexFormat/specification.md) developers. Featuring:
 
 * Graph visualization
@@ -7,10 +9,10 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 
 # Getting Started
 
-- `> git clone this repository`
-- `> cd lsif-util`
-- `> npm install`
-- `> tsc -p .\tsconfig.json`
+* `> git clone this repository`
+* `> cd lsif-util`
+* `> npm install`
+* `> tsc -p .\tsconfig.json`
 
 # Graph
 
@@ -53,7 +55,7 @@ The search has a lot of options, but don't let yourself be intimidated! Most tra
 
 You can combine the above options to narrow down what you are looking for. For example, say you have the following code snippet:
 
-```
+```typescript
 class foo {
     bar(): void {
         // ...
@@ -69,7 +71,7 @@ If you want to find the declaration of `bar`, you can do:
 
 Let's say we have this typescript code snippet:
 
-```
+```typescript
 class foo {
     bar(): void {
         // ...

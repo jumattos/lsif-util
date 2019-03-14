@@ -24,6 +24,11 @@ function main(argc: number, argv: string[]) {
         }
     }
 
+    if (targetIds.length === 0) {
+        console.log(`Please specify at least one target vertex. Usage:\nnode ${argv[1]} [options] targetVertices`);
+        return;
+    }
+
     fs.readFile(inputPath, (err, data) => {
         if (err) {
             throw err;
