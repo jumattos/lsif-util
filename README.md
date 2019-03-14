@@ -31,7 +31,9 @@ Example:
 
 The output will be a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
 
-The following image was created using [Viz.js](http://viz-js.com/)
+You can either visualize it online using [Viz.js](http://viz-js.com/) or install [Graphviz](http://graphviz.org/) and pipe it to the DOT tool:
+
+`> node .\lib\graph.js -d 2 15 | dot -Tpng -o image.png`
 
 ![graph example](images/graphviz.png)
 
