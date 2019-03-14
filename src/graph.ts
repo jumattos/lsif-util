@@ -17,7 +17,10 @@ function main(argc: number, argv: string[]) {
             case "--verbose": case "-v":
                 verbose = true;
             default:
-                targetIds.push(argv[i]);
+                let toPush = argv[i].split(" ");
+                toPush.forEach(id => {
+                    targetIds.push(id)
+                });
         }
     }
 

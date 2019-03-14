@@ -16,6 +16,19 @@
             "args": [
                 "5"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Search",
+            "program": "${workspaceFolder}/lib/search.js",
+            "outFiles": [
+				"${workspaceFolder}/lib/**/*.js"
+            ],
+            "sourceMaps": true,
+            "args": [
+                "-id", "20", "16", "-inV", "15"
+            ]
         }
     ]
 }
