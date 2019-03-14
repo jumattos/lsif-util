@@ -12,6 +12,8 @@
   "author": "Jullyana Mattos Vycas",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^11.11.0"
+    "@types/node": "^11.11.0",
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.3.3333"
   }
 }
