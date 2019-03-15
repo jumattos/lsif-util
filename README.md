@@ -3,9 +3,9 @@
 
 Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blob/master/indexFormat/specification.md) developers. Featuring:
 
+* [WIP] Validation
 * Graph visualization
 * Quick search
-* [WIP] Validation
 
 # Getting Started
 
@@ -13,6 +13,22 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 * `> cd lsif-util`
 * `> npm install`
 * `> tsc -p .\tsconfig.json`
+
+# Validation
+
+`> node .\lib\validate.js [options]`
+
+| Option            | Default     | Description                                             |
+|-------------------|-------------|---------------------------------------------------------|
+| --inputPath or -p | ./lsif.json | Path to input file (JSON)                               |
+
+Returns whether the LSIF input file is **syntatically** valid or not.
+
+Verifies the following:
+
+* Vertices are emitted before connecting edges
+* [WIP] Vertices and edges properties are correct
+* [WIP] Edges exist only between defined vertices
 
 # Graph
 

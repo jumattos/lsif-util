@@ -29,6 +29,17 @@
             "args": [
                 "-id", "20", "16", "-inV", "15"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Validate",
+            "program": "${workspaceFolder}/lib/validate.js",
+            "outFiles": [
+				"${workspaceFolder}/lib/**/*.js"
+            ],
+            "sourceMaps": true,
+            "args": []
         }
     ]
 }
