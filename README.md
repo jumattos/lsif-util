@@ -38,7 +38,8 @@ For thorough validation, please clone the [LSIF-typescript](https://github.com/M
 
 This way, the validation tool will have access to the LSIF protocol and will also be able to check:
 
-* Vertices and edges properties are correct
+* Vertices properties are correct
+* Edges properties are correct
 * [WIP] Edges exist only between defined vertices
 
 # Graph

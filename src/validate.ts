@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as TJS from 'typescript-json-schema';
 import { validate as validateSchema } from 'jsonschema';
-import { stringify } from 'querystring';
 
 let inputPath: string = "./lsif.json";
 let protocolPath: string = "../lsif-typescript/tsc-lsif/src/shared/protocol.ts";
@@ -36,6 +35,9 @@ function validate(toolOutput: any[]): boolean {
     let visited: { [id: string]: boolean } = {};
     let outputMessage = "Reading input...";
 
+    /*
+     * Check #1: vertices are emitted before connecting edges
+     */
     process.stdout.write(`${outputMessage}\r`);
     for (let i = 0; i < toolOutput.length; i++) {
         const object = toolOutput[i];
@@ -69,6 +71,9 @@ function validate(toolOutput: any[]): boolean {
     console.log(`${outputMessage} done`);
     printPass("Vertices are emitted before connecting edges");
 
+    /*
+     * Check #2: vertices are used in at least one edge
+     */
     for (let key in vertices) {
         if (!visited[key] && vertices[key].label !== "metaData"){
             console.error(`Vertex ${key} is not connected to any other`);
@@ -77,11 +82,16 @@ function validate(toolOutput: any[]): boolean {
     }
     printPass("Vertices are used in at least one edge");
 
+    /*
+     * Thorough validation
+     */
     if (fs.existsSync(protocolPath)) {
         const program = TJS.getProgramFromFiles([protocolPath]);
-        // Project and document can have additional data
-        const vertexSchema = TJS.generateSchema(program, "Vertex", { required: true });
 
+        /*
+         * Check #3: vertices properties are correct
+         */
+        const vertexSchema = TJS.generateSchema(program, "Vertex", { required: true });
         let count = 1;
         let length = Object.keys(vertices).length;
         for (let key in vertices) {
@@ -116,8 +126,10 @@ function validate(toolOutput: any[]): boolean {
         console.log(`${outputMessage} done`);
         printPass("Vertices properties are correct");
 
+        /*
+         * Check #4: edges properties are correct
+         */
         const edgeSchema = TJS.generateSchema(program, "Edge", { required: true, noExtraProps: true });
-        
         count = 1;
         length = Object.keys(edges).length;
         for (let key in edges) {
