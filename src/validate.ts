@@ -43,7 +43,7 @@ function validate(toolOutput: any[]): boolean {
         if (object.type === "edge") {
             if (!object.inV || !object.outV) {
                 console.log(`${outputMessage} error`);
-                console.error(`Edge ${object.id} should have the properties "inV" and "outV"`);
+                console.error(`Edge ${object.id} requires properties "inV" and "outV"`);
                 return false;
             }
 
@@ -95,7 +95,7 @@ function validate(toolOutput: any[]): boolean {
                 console.error(`Vertex ${key} is not valid:\n${JSON.stringify(vertices[key], null, 2)}`);
 
                 if (!vertices[key].label || vertices[key].label === "") {
-                    console.error(`ERROR -> requires property "label"`);
+                    printError(`requires property "label"`);
                 }
                 else {
                     try {
@@ -103,7 +103,7 @@ function validate(toolOutput: any[]): boolean {
                         let specificSchema = TJS.generateSchema(program, className, { required: true });
                         let moreValidation = validateSchema(vertices[key], specificSchema);
                         moreValidation.errors.forEach(error => {
-                            console.error(`ERROR -> ${error.message}`);
+                            printError(error.message);
                         });
                     }
                     catch {
@@ -129,12 +129,19 @@ function validate(toolOutput: any[]): boolean {
             if (!validation.valid) {
                 console.log(`${outputMessage} error`);
                 console.error(`Edge ${key} is not valid:\n${JSON.stringify(edges[key], null, 2)}`);
+                
+                // Since we checked for inV and outV before, the only possible problem is the label
+                if (!edges[key].label || edges[key].label === "") {
+                    printError(`requires property "label"`);
+                }
+                else {
+                    printError(`unknown label: "${edges[key].label}"`);
+                }
                 return false;
             }
         }
         console.log(`${outputMessage} done`);
         printPass("Edges properties are correct");
-        printPass("Edges exist only between defined vertices");
     }
     else {
         console.warn("Skipping thorough validation. For more information, check README");
@@ -147,6 +154,10 @@ function printPass(message: string) {
     if (verbose) {
         console.log(`PASSED -> ${message}`);
     }
+}
+
+function printError(message: string) {
+    console.error(`ERROR -> ${message}`);
 }
 
 main(process.argv.length, process.argv);
