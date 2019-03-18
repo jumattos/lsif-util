@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as TJS from 'typescript-json-schema';
 import { validate as validateSchema } from 'jsonschema';
+import { stringify } from 'querystring';
 
 let inputPath: string = "./lsif.json";
 let protocolPath: string = "../lsif-typescript/tsc-lsif/src/shared/protocol.ts";
@@ -40,8 +41,15 @@ function validate(toolOutput: any[]): boolean {
         const object = toolOutput[i];
 
         if (object.type === "edge") {
+            if (!object.inV || !object.outV) {
+                console.log(`${outputMessage} error`);
+                console.error(`Edge ${object.id} should have the properties "inV" and "outV"`);
+                return false;
+            }
+
             // If a vertex was not emitted before an edge that refer to it
             if (!vertices[object.inV.toString()] || !vertices[object.outV.toString()]) {
+                console.log(`${outputMessage} error`);
                 console.error(`Edge ${object.id} was emitted before the vertices it refers to.`);
                 return false;
             }
@@ -53,6 +61,7 @@ function validate(toolOutput: any[]): boolean {
         }
         else {
             // Only two types are valid: edge and vertex
+            console.log(`${outputMessage} error`);
             console.error(`Unknown element type: ${object.type}.`);
             return false;
         }
@@ -84,6 +93,23 @@ function validate(toolOutput: any[]): boolean {
             if (!validation.valid) {
                 console.log(`${outputMessage} error`);
                 console.error(`Vertex ${key} is not valid:\n${JSON.stringify(vertices[key], null, 2)}`);
+
+                if (!vertices[key].label || vertices[key].label === "") {
+                    console.error(`ERROR -> requires property "label"`);
+                }
+                else {
+                    try {
+                        let className = vertices[key].label[0].toUpperCase() + vertices[key].label.slice(1);
+                        let specificSchema = TJS.generateSchema(program, className, { required: true });
+                        let moreValidation = validateSchema(vertices[key], specificSchema);
+                        moreValidation.errors.forEach(error => {
+                            console.error(`ERROR -> ${error.message}`);
+                        });
+                    }
+                    catch {
+                        // Failed to get more details for the error
+                    }
+                }
                 return false;
             }
         }
