@@ -7,15 +7,18 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc -p ./"
   },
   "author": "Jullyana Mattos Vycas",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@types/node": "^11.11.0",
-    "jsonschema": "^1.2.4",
     "tsc": "^1.20150623.0",
-    "typescript": "^3.3.3333",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "jsonschema": "^1.2.4",
     "typescript-json-schema": "^0.36.0"
   }
 }
