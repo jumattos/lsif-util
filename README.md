@@ -12,7 +12,7 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 * `> git clone this repository`
 * `> cd lsif-util`
 * `> npm install`
-* `> tsc -p .\tsconfig.json`
+* `> npm run compile`
 
 # Validation
 
