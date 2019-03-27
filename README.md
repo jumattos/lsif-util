@@ -21,7 +21,6 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 | Option            | Default     | Description                                             |
 |-------------------|-------------|---------------------------------------------------------|
 | --inputPath or -p | ./lsif.json | Path to input file (JSON)                               |
-| --verbose or -v   | false       | Display which of the tests passed                       |
 
 Returns whether the LSIF input file is **syntatically** valid or not.
 

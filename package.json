@@ -13,11 +13,12 @@
   "author": "Jullyana Mattos Vycas",
   "license": "ISC",
   "devDependencies": {
+    "@types/fs-extra": "^5.0.5",
     "@types/node": "^11.11.0",
-    "tsc": "^1.20150623.0",
     "typescript": "^3.3.3333"
   },
   "dependencies": {
+    "fs-extra": "^7.0.1",
     "jsonschema": "^1.2.4",
     "typescript-json-schema": "^0.36.0"
   }

@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fse from 'fs-extra';
 import * as TJS from 'typescript-json-schema';
 import { validate as validateSchema } from 'jsonschema';
 
@@ -46,7 +46,7 @@ class Element {
     }
 }
 
-function main(argc: number, argv: string[]) {
+async function main(argc: number, argv: string[]): Promise<void> {
     for (let i = 2; i < argc; i++) {
         switch (argv[i]) {
             case "--inputPath": case "-p":
@@ -59,29 +59,25 @@ function main(argc: number, argv: string[]) {
         checks.push(true);
     }
 
-    fs.readFile(inputPath, (err, data) => {
-        if (err) {
-            throw err;
-        }
-        
-        validate(JSON.parse(data.toString()));
-    });
+    await validate(await fse.readJSON(inputPath));
 }
 
-function validate(toolOutput: any[]): void {
+async function validate(toolOutput: any[]): Promise<boolean> {
     readInput(toolOutput);
 
     checkAllVisited();
     
-    if (fs.existsSync(protocolPath)) {
+    if (await fse.pathExists(protocolPath)) {
         checkVertices();
-        checkEdges();        
+        checkEdges();
     }
     else {
         console.warn("Skipping thorough validation. For more information, check README");
     }
 
     printOutput();
+
+    return errors.length === 0;
 }
 
 function readInput(toolOutput: any[]): void {
