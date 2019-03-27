@@ -4,7 +4,47 @@ import { validate as validateSchema } from 'jsonschema';
 
 let inputPath: string = "./lsif.json";
 let protocolPath: string = "../lsif-typescript/tsc-lsif/src/shared/protocol.ts";
-let verbose: boolean = false;
+
+let vertices: { [id: string]: Element } = {};
+let edges: { [id: string]: Element } = {};
+let visited: { [id: string]: boolean } = {};
+
+let errors: Error[] = [];
+let checks: boolean[] = [];
+
+let numOfChecks = 2;
+enum Check {
+    vertexBeforeEdge = 0,
+    allVerticesUsed
+}
+
+class Error {
+    element: any;
+    message: string;
+
+    constructor(element: any, message: string) {
+        this.element = element;
+        this.message = message;
+    }
+
+    print(): void {
+        console.error(`${this.element.type.toUpperCase()} ${this.element.id}: FAIL> ${this.message}\n${JSON.stringify(this.element, null, 2)}`);
+    }
+}
+
+class Element {
+    element: any;
+    valid: boolean;
+
+    constructor(element: any) {
+        this.element = element;
+        this.valid = true;
+    }
+
+    invalidate(): void {
+        this.valid = false;
+    }
+}
 
 function main(argc: number, argv: string[]) {
     for (let i = 2; i < argc; i++) {
@@ -12,10 +52,11 @@ function main(argc: number, argv: string[]) {
             case "--inputPath": case "-p":
                 inputPath = argv[++i];
                 break;
-            case "--verbose": case "-v":
-                verbose = true;
-                break;
         }
+    }
+
+    for (let i = 0; i < numOfChecks; i++) {
+        checks.push(true);
     }
 
     fs.readFile(inputPath, (err, data) => {
@@ -23,153 +64,195 @@ function main(argc: number, argv: string[]) {
             throw err;
         }
         
-        if (validate(JSON.parse(data.toString()))) {
-            console.log("LSIF valid");
-        }
+        validate(JSON.parse(data.toString()));
     });
 }
 
-function validate(toolOutput: any[]): boolean {
-    let edges: { [id: string]: any } = {};
-    let vertices: { [id: string]: any } = {};
-    let visited: { [id: string]: boolean } = {};
-    let outputMessage = "Reading input...";
+function validate(toolOutput: any[]): void {
+    readInput(toolOutput);
 
-    /*
-     * Check #1: vertices are emitted before connecting edges
-     */
-    process.stdout.write(`${outputMessage}\r`);
-    for (let i = 0; i < toolOutput.length; i++) {
-        const object = toolOutput[i];
-
-        if (object.type === "edge") {
-            if (!object.inV || !object.outV) {
-                console.log(`${outputMessage} error`);
-                console.error(`Edge ${object.id} requires properties "inV" and "outV"`);
-                return false;
-            }
-
-            // If a vertex was not emitted before an edge that refer to it
-            if (!vertices[object.inV.toString()] || !vertices[object.outV.toString()]) {
-                console.log(`${outputMessage} error`);
-                console.error(`Edge ${object.id} was emitted before the vertices it refers to.`);
-                return false;
-            }
-            edges[object.id.toString()] = object;
-            visited[object.inV.toString()] = visited[object.outV.toString()] = true;
-        }
-        else if (object.type === "vertex") {
-            vertices[object.id.toString()] = object;
-        }
-        else {
-            // Only two types are valid: edge and vertex
-            console.log(`${outputMessage} error`);
-            console.error(`Unknown element type: ${object.type}.`);
-            return false;
-        }
-    }
-    console.log(`${outputMessage} done`);
-    printPass("Vertices are emitted before connecting edges");
-
-    /*
-     * Check #2: vertices are used in at least one edge
-     */
-    for (let key in vertices) {
-        if (!visited[key] && vertices[key].label !== "metaData"){
-            console.error(`Vertex ${key} is not connected to any other`);
-            return false;
-        }
-    }
-    printPass("Vertices are used in at least one edge");
-
-    /*
-     * Thorough validation
-     */
+    checkAllVisited();
+    
     if (fs.existsSync(protocolPath)) {
-        const program = TJS.getProgramFromFiles([protocolPath]);
-
-        /*
-         * Check #3: vertices properties are correct
-         */
-        const vertexSchema = TJS.generateSchema(program, "Vertex", { required: true });
-        let count = 1;
-        let length = Object.keys(vertices).length;
-        for (let key in vertices) {
-            outputMessage = `Verifying vertex ${count} of ${length}...`;
-            process.stdout.write(`${outputMessage}\r`);
-            count++;
-
-            const validation = validateSchema(vertices[key], vertexSchema);
-            if (!validation.valid) {
-                console.log(`${outputMessage} error`);
-                console.error(`Vertex ${key} is not valid:\n${JSON.stringify(vertices[key], null, 2)}`);
-
-                if (!vertices[key].label || vertices[key].label === "") {
-                    printError(`requires property "label"`);
-                }
-                else {
-                    try {
-                        let className = vertices[key].label[0].toUpperCase() + vertices[key].label.slice(1);
-                        let specificSchema = TJS.generateSchema(program, className, { required: true });
-                        let moreValidation = validateSchema(vertices[key], specificSchema);
-                        moreValidation.errors.forEach(error => {
-                            printError(error.message);
-                        });
-                    }
-                    catch {
-                        // Failed to get more details for the error
-                    }
-                }
-                return false;
-            }
-        }
-        console.log(`${outputMessage} done`);
-        printPass("Vertices properties are correct");
-
-        /*
-         * Check #4: edges properties are correct
-         */
-        const edgeSchema = TJS.generateSchema(program, "Edge", { required: true, noExtraProps: true });
-        count = 1;
-        length = Object.keys(edges).length;
-        for (let key in edges) {
-            outputMessage = `Verifying edge ${count} of ${length}...`;
-            process.stdout.write(`${outputMessage}\r`);
-            count++;
-
-            const validation = validateSchema(edges[key], edgeSchema);
-            if (!validation.valid) {
-                console.log(`${outputMessage} error`);
-                console.error(`Edge ${key} is not valid:\n${JSON.stringify(edges[key], null, 2)}`);
-                
-                // Since we checked for inV and outV before, the only possible problem is the label
-                if (!edges[key].label || edges[key].label === "") {
-                    printError(`requires property "label"`);
-                }
-                else {
-                    printError(`unknown label: "${edges[key].label}"`);
-                }
-                return false;
-            }
-        }
-        console.log(`${outputMessage} done`);
-        printPass("Edges properties are correct");
+        checkVertices();
+        checkEdges();        
     }
     else {
         console.warn("Skipping thorough validation. For more information, check README");
     }
 
-    return true;
+    printOutput();
 }
 
-function printPass(message: string) {
-    if (verbose) {
-        console.log(`PASSED -> ${message}`);
+function readInput(toolOutput: any[]): void {
+    let outputMessage = "Reading input...";
+    process.stdout.write(`${outputMessage}\r`);
+
+    for (let i = 0; i < toolOutput.length; i++) {
+        const object = toolOutput[i];
+
+        if (object.type === "edge") {
+            edges[object.id.toString()] = new Element(object);
+
+            if (!object.inV || !object.outV) {
+                errors.push(new Error(object, `requires properties "inV" and "outV"`));
+                edges[object.id.toString()].invalidate();
+                continue;
+            }
+
+            if (!vertices[object.inV.toString()] || !vertices[object.outV.toString()]) {
+                errors.push(new Error(object, `was emitted before a vertex it refers to`));
+                edges[object.id.toString()].invalidate();
+                checks[Check.vertexBeforeEdge] = false;
+            }
+
+            visited[object.inV.toString()] = visited[object.outV.toString()] = true;
+        }
+        else if (object.type === "vertex") {
+            vertices[object.id.toString()] = new Element(object);
+        }
+        else {
+            errors.push(new Error(object, `unknown element type`));
+        }
+    }
+
+    console.log(`${outputMessage} done`);
+}
+
+function checkAllVisited(): void {
+    for (let key in vertices) {
+        if (!visited[key] && vertices[key].element.label !== "metaData"){
+            errors.push(new Error(vertices[key].element, `not connected to any other vertex`));
+            checks[Check.allVerticesUsed] = false;
+        }
     }
 }
 
-function printError(message: string) {
-    console.error(`ERROR -> ${message}`);
+function checkVertices(): void {
+    let outputMessage: string;
+    const program = TJS.getProgramFromFiles([protocolPath]);
+    const vertexSchema = TJS.generateSchema(program, "Vertex", { required: true });
+    let count = 1;
+    let length = Object.keys(vertices).length;
+
+    for (let key in vertices) {
+        outputMessage = `Verifying vertex ${count} of ${length}...`;
+        process.stdout.write(`${outputMessage}\r`);
+        count++;
+
+        const validation = validateSchema(vertices[key].element, vertexSchema);
+        if (!validation.valid) {
+            let errorMessage: string;
+            vertices[key].invalidate();
+
+            if (!vertices[key].element.label || vertices[key].element.label === "") {
+                errorMessage = `requires property "label"`;
+            }
+            else {
+                try {
+                    let className = vertices[key].element.label[0].toUpperCase() + vertices[key].element.label.slice(1);
+                    let specificSchema = TJS.generateSchema(program, className, { required: true });
+                    let moreValidation = validateSchema(vertices[key].element, specificSchema);
+                    errorMessage = "";
+                    moreValidation.errors.forEach((error, index) => {
+                        if (index > 0) {
+                            errorMessage += "; ";
+                        }
+                        errorMessage += `${error.message}`;
+                    });
+                }
+                catch {
+                    // Failed to get more details for the error
+                }
+            }
+            errors.push(new Error(vertices[key].element, errorMessage));
+        }
+    }
+    console.log(`${outputMessage} done`);
+}
+
+function checkEdges(): void {
+    let outputMessage: string;
+    const program = TJS.getProgramFromFiles([protocolPath]);
+    const edgeSchema = TJS.generateSchema(program, "Edge", { required: true, noExtraProps: true });
+    let count = 1;
+    let length = Object.keys(edges).length;
+    for (let key in edges) {
+        outputMessage = `Verifying edge ${count} of ${length}...`;
+        process.stdout.write(`${outputMessage}\r`);
+        count++;
+
+        const validation = validateSchema(edges[key].element, edgeSchema);
+        if (!validation.valid) {
+            let errorMessage: string;
+            edges[key].invalidate();
+
+            if (!edges[key].element.inV || !edges[key].element.outV) {
+                // This error was caught before
+                continue;
+            }
+
+            if (!edges[key].element.label || edges[key].element.label === "") {
+                errorMessage = `requires property "label"`;
+            }
+            else {
+                errorMessage = `unknown label`;
+            }
+            errors.push(new Error(edges[key].element, errorMessage));
+        }
+    }
+    console.log(`${outputMessage} done`);
+}
+
+function getCheckMessage(check: Check): string {
+    switch (check) {
+        case Check.vertexBeforeEdge:
+            return "vertices emitted before connecting edges";
+        case Check.allVerticesUsed:
+            return "all vertices are used in at least one edge";
+        // WIP
+        // case Check.edgeDefinedVertices:
+        //     return "edges exist only between defined vertices";
+    }
+}
+
+function printOutput(): void {
+    console.log("\nResults:");
+    for (let i = 0; i < numOfChecks; i++) {
+        console.log(`\t${checks[i]? 'PASS' : 'FAIL'}> ${getCheckMessage(i)}`);
+    }
+    console.log();
+
+    let passed = 0, failed = 0, total = 0;
+    for (let key in vertices) {
+        const vertex = vertices[key];
+        if (vertex.valid) {
+            passed++;
+        }
+        else {
+            failed++;
+        }
+        total++;
+    }
+    console.log(`Vertices:\t${passed} passed, ${failed} failed, ${total} total`);
+
+    passed = 0; failed = 0; total = 0;
+    for (let key in edges) {
+        const edge = edges[key];
+        if (edge.valid) {
+            passed++;
+        }
+        else {
+            failed++;
+        }
+        total++;
+    }
+    console.log(`Edges:\t\t${passed} passed, ${failed} failed, ${total} total`);
+
+    errors.forEach(e => {
+        console.log();
+        e.print();
+    });
 }
 
 main(process.argv.length, process.argv);
