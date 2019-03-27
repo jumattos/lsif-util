@@ -3,7 +3,7 @@ import * as TJS from 'typescript-json-schema';
 import { validate as validateSchema } from 'jsonschema';
 
 let inputPath: string = "./lsif.json";
-let protocolPath: string = "../lsif-typescript/tsc-lsif/src/shared/protocol.ts";
+let protocolPath: string = "./node_modules/lsif-protocol/lib/protocol.d.ts";
 
 let vertices: { [id: string]: Element } = {};
 let edges: { [id: string]: Element } = {};
@@ -72,7 +72,7 @@ async function validate(toolOutput: any[]): Promise<boolean> {
         checkEdges();
     }
     else {
-        console.warn("Skipping thorough validation. For more information, check README");
+        console.warn("Skipping thorough validation: protocol.d.ts was not found");
     }
 
     printOutput();
