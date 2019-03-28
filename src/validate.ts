@@ -32,7 +32,7 @@ async function validate(toolOutput: any[]): Promise<boolean> {
     /*
      * Check #1: vertices are emitted before connecting edges
      */
-    console.log(`${outputMessage}`);
+    process.stdout.write(`${outputMessage}\r`);
     for (let i = 0; i < toolOutput.length; i++) {
         const object = toolOutput[i];
 
