@@ -26,19 +26,10 @@ Returns whether the LSIF input file is **syntatically** valid or not.
 
 Verifies the following:
 
-* Vertices are emitted before connecting edges
-* Vertices are used in at least one edge (except metadata)
-
-For thorough validation, please clone the [LSIF-typescript](https://github.com/Microsoft/lsif-typescript) repository at a sister folder:
-
-* `> cd ..`
-* `> git clone https://github.com/Microsoft/lsif-typescript.git`
-* `> cd lsif-util`
-
-This way, the validation tool will have access to the LSIF protocol and will also be able to check:
-
 * Vertices properties are correct
 * Edges properties are correct
+* Vertices are emitted before connecting edges
+* Vertices are used in at least one edge (except metadata)
 * [WIP] Edges exist only between defined vertices
 
 # Graph
