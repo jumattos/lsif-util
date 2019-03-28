@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fse from 'fs-extra';
 import * as TJS from 'typescript-json-schema';
 import { validate as validateSchema } from 'jsonschema';
 
@@ -6,7 +6,7 @@ let inputPath: string = "./lsif.json";
 let protocolPath: string = "../lsif-typescript/tsc-lsif/src/shared/protocol.ts";
 let verbose: boolean = false;
 
-function main(argc: number, argv: string[]) {
+async function main(argc: number, argv: string[]): Promise<void> {
     for (let i = 2; i < argc; i++) {
         switch (argv[i]) {
             case "--inputPath": case "-p":
@@ -18,18 +18,12 @@ function main(argc: number, argv: string[]) {
         }
     }
 
-    fs.readFile(inputPath, (err, data) => {
-        if (err) {
-            throw err;
-        }
-        
-        if (validate(JSON.parse(data.toString()))) {
-            console.log("LSIF valid");
-        }
-    });
+    if (await validate(await fse.readJSON(inputPath))) {
+        console.log("LSIF valid");
+    }
 }
 
-function validate(toolOutput: any[]): boolean {
+async function validate(toolOutput: any[]): Promise<boolean> {
     let edges: { [id: string]: any } = {};
     let vertices: { [id: string]: any } = {};
     let visited: { [id: string]: boolean } = {};
@@ -85,7 +79,7 @@ function validate(toolOutput: any[]): boolean {
     /*
      * Thorough validation
      */
-    if (fs.existsSync(protocolPath)) {
+    if (await fse.pathExists(protocolPath)) {
         const program = TJS.getProgramFromFiles([protocolPath]);
 
         /*
