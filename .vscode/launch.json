@@ -40,6 +40,17 @@
             ],
             "sourceMaps": true,
             "args": []
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Metadata",
+            "program": "${workspaceFolder}/lib/metadata.js",
+            "outFiles": [
+				"${workspaceFolder}/lib/**/*.js"
+            ],
+            "sourceMaps": true,
+            "args": []
         }
     ]
 }
