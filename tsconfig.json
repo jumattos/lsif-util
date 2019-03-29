@@ -11,5 +11,12 @@
   },
   "exclude": [
     "node_modules"
+  ],
+  "plugins": [
+    {
+      "name": "typescript-tslint-plugin",
+      "configFile": "./tslint.json",
+      "suppressWhileTypeErrorsPresent": false
+    }
   ]
 }
