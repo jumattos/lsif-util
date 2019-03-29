@@ -1,56 +1,54 @@
-import * as fs from 'fs';
+import * as fse from 'fs-extra';
+import * as LSIF from 'lsif-protocol';
 
-let inputPath: string = "./lsif.json";
+let inputPath: string = './lsif.json';
 let distance: number = 1;
 let verbose: boolean = false;
 let targetIds: string[] = [];
 
-function main(argc: number, argv: string[]) {
-    for (let i = 2; i < argc; i++) {
+async function main(argc: number, argv: string[]): Promise<void> {
+    for (let i: number = 2; i < argc; i++) {
         switch (argv[i]) {
-            case "--inputPath": case "-p":
+            case '--inputPath': case '-p':
                 inputPath = argv[++i];
                 break;
-            case "--distance": case "-d":
-                distance = parseInt(argv[++i]);
+            case '--distance': case '-d':
+                distance = parseInt(argv[++i], 10);
                 break;
-            case "--verbose": case "-v":
+            case '--verbose': case '-v':
                 verbose = true;
             default:
-                let toPush = argv[i].split(" ");
-                toPush.forEach(id => {
-                    targetIds.push(id)
+                const toPush: string[] = argv[i].split(' ');
+                toPush.forEach((id: string) => {
+                    targetIds.push(id);
                 });
         }
     }
 
     if (targetIds.length === 0) {
         console.log(`Please specify at least one target vertex. Usage:\nnode ${argv[1]} [options] targetVertices`);
+
         return;
     }
 
-    fs.readFile(inputPath, (err, data) => {
-        if (err) {
-            throw err;
-        }
-        graph(JSON.parse(data.toString()));
-    });
+    graph(await fse.readJSON(inputPath));
 }
 
-function graph(toolOutput: any[]) {
-    let edges: { [id: string]: any } = {};
-    let vertices: { [id: string]: any } = {};
+function graph(toolOutput: LSIF.Element[]): void {
+    const edges: { [id: string]: LSIF.Element } = {};
+    const vertices: { [id: string]: LSIF.Element } = {};
 
-    let allEdges = toolOutput.filter(object => object.type === "edge");
+    const allEdges: LSIF.Element[] = toolOutput.filter((element: LSIF.Element) => element.type === 'edge');
     let idQeue: string[] = targetIds;
-    while(distance > 0) {
+    while (distance > 0) {
         distance--;
         targetIds = idQeue;
         idQeue = [];
 
-        allEdges.forEach(edge => {
-            let inV = edge.inV.toString();
-            let outV = edge.outV.toString();
+        allEdges.forEach((element: LSIF.Element) => {
+            const edge: LSIF.Edge = <LSIF.Edge> element;
+            const inV: string = edge.inV.toString();
+            const outV: string = edge.outV.toString();
             if (targetIds.includes(inV) || targetIds.includes(outV)) {
                 edges[edge.id] = edge;
                 idQeue.push(inV, outV);
@@ -58,49 +56,52 @@ function graph(toolOutput: any[]) {
         });
     }
 
-    for (let key in edges) {
-        let edge = edges[key];
-        
-        let inV = toolOutput.filter(object => object.id === edge.inV)[0];
-        let outV = toolOutput.filter(object => object.id === edge.outV)[0];
+    Object.keys(edges)
+    .forEach((key: string) => {
+        const edge: LSIF.Edge = <LSIF.Edge> edges[key];
+        const inV: LSIF.Element = toolOutput.filter((element: LSIF.Element) => element.id === edge.inV)[0];
+        const outV: LSIF.Element = toolOutput.filter((element: LSIF.Element) => element.id === edge.outV)[0];
 
         vertices[inV.id.toString()] = inV;
         vertices[outV.id.toString()] = outV;
-    }
+    });
 
     printDOT(edges, vertices);
 }
 
-function printDOT(edges, vertices): void {
-    let digraph = "digraph LSIF {\n";
-    
-    for (let key in vertices) {
-        let vertex = vertices[key];
-        let extraText = "";
-        
+function printDOT(edges: { [id: string]: LSIF.Element }, vertices: { [id: string]: LSIF.Element }): void {
+    let digraph: string = 'digraph LSIF {\n';
+
+    Object.keys(vertices)
+    .forEach((key: string) => {
+        const vertex: LSIF.Vertex = <LSIF.Vertex> vertices[key];
+        let extraText: string = '';
+
         if (verbose) {
-            extraText = "\n";
-            let extraInfo = JSON.parse(JSON.stringify(vertex));
+            extraText = '\n';
+            const extraInfo: LSIF.Vertex = JSON.parse(JSON.stringify(vertex));
             delete extraInfo.id;
             delete extraInfo.label;
             delete extraInfo.type;
-            
-            for (let property in extraInfo) {
-                let value = JSON.stringify(extraInfo[property]);
-                let re = new RegExp("\"", 'g');
-                extraText += `${property} = ${value.replace(re, "\\\"")}\n`
-            }
+
+            Object.keys(extraInfo)
+            .forEach((property: string) => {
+                const value: string = JSON.stringify(extraInfo[property]);
+                const re: RegExp = new RegExp('"', 'g');
+                extraText += `${property} = ${value.replace(re, '\\"')}\n`;
+            });
         }
 
-        digraph += `  ${vertex.id} [label="[${vertex.id}] ${vertex.label}${extraText}"]\n`
-    }
+        digraph += `  ${vertex.id} [label="[${vertex.id}] ${vertex.label}${extraText}"]\n`;
+    });
 
-    for (let key in edges) {
-        let edge = edges[key];
-        digraph += `  ${edge.outV} -> ${edge.inV} [label="${edge.label}"]\n`
-    }
+    Object.keys(edges)
+    .forEach((key: string) => {
+        const edge: LSIF.Edge = <LSIF.Edge> edges[key];
+        digraph += `  ${edge.outV} -> ${edge.inV} [label="${edge.label}"]\n`;
+    });
 
-    digraph += "}";
+    digraph += '}';
 
     console.log(digraph);
 }
