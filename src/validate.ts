@@ -66,6 +66,7 @@ async function main(argc: number, argv: string[]): Promise<void> {
         switch (argv[i]) {
             case '--inputPath': case '-p':
                 inputPath = argv[++i];
+                break;
             default:
                 console.error(`Unknown option: ${argv[i]}`);
         }
