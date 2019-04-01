@@ -13,6 +13,7 @@
         "no-increment-decrement": false,
         "no-unsafe-any": false,
         "completed-docs": false,
-        "no-floating-promises": false
+        "no-floating-promises": false,
+        "linebreak-style": [true, "CRLF"],
     }
 }
