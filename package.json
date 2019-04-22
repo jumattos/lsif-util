@@ -23,7 +23,7 @@
   "dependencies": {
     "fs-extra": "^7.0.1",
     "jsonschema": "^1.2.4",
-    "lsif-protocol": "^0.2.1",
+    "lsif-protocol": "^0.2.3",
     "typescript-json-schema": "^0.36.0"
   }
 }
