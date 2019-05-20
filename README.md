@@ -1,5 +1,5 @@
 
-# About
+# lsif-util
 
 Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blob/master/indexFormat/specification.md) developers. Featuring:
 
@@ -7,16 +7,21 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 * Graph visualization
 * Quick search
 
-# Getting Started
+## Usage
 
-* `> git clone this repository`
-* `> cd lsif-util`
-* `> npm install`
-* `> npm run compile`
+1. Clone this repository
+2. Install and compile
 
-# Validation
+```
+npm install
+npm run compile
+```
 
-`> node .\lib\validate.js [options]`
+## Validate
+
+```
+node .\lib\validate.js [options]
+```
 
 | Option            | Default     | Description                                             |
 |-------------------|-------------|---------------------------------------------------------|
@@ -32,9 +37,11 @@ Verifies the following:
 * Vertices are used in at least one edge (except metadata)
 * [WIP] Edges exist only between defined vertices
 
-# Graph
+## Visualize
 
-`> node .\lib\graph.js [options] targetVertices`
+```
+node .\lib\graph.js [options] targetVertices
+```
 
 After the options, you should specify one or more `targetVertices`. These are the vertices in your JSON file that you are interested in.
 
@@ -45,19 +52,26 @@ After the options, you should specify one or more `targetVertices`. These are th
 | --verbose or -v   | false       | Display more information about the vertices             |
 
 Example:
-`> node .\lib\graph.js -d 2 15`
+
+```
+node .\lib\graph.js -d 2 15
+```
 
 The output will be a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
 
 You can either visualize it online using [Viz.js](http://viz-js.com/) or install [Graphviz](http://graphviz.org/) and pipe it to the DOT tool:
 
-`> node .\lib\graph.js -d 2 15 | dot -Tpng -o image.png`
+```
+node .\lib\graph.js -d 2 15 | dot -Tpng -o image.png
+```
 
 ![graph example](images/graphviz.png)
 
-# Search
+## Search
 
-`> node .\lib\search.js [options]`
+```
+node .\lib\search.js [options]
+```
 
 The search has a lot of options, but don't let yourself be intimidated! Most translate to the same idea of listing what you want.
 
@@ -85,9 +99,11 @@ class foo {
 
 If you want to find the declaration of `bar`, you can do:
 
-`> node .\lib\search.js -type vertex -label range -regex bar`
+```
+node .\lib\search.js -type vertex -label range -regex bar
+```
 
-# Combining the tools for best results
+### Combining the tools for best results
 
 Let's say we have this typescript code snippet:
 
@@ -106,17 +122,23 @@ We want to check if `a.bar` is pointing to the correct `resultSet`.
 
 It would be nice to see the LSIF graph for `a.bar`, but we don't know its vertex id. We can search for it:
 
-`> node .\lib\search.js -type vertex -label range -regex bar`
+```
+node .\lib\search.js -type vertex -label range -regex bar
+```
 
 This will return two objects: one for the declaration at line 2 and one for the invocation at line 8. Now we have the ids we need to draw the graph!
 
 An option is to use the `--idOnly` flag. We can save the output to a variable:
 
-`> $myIds = node .\lib\search.js -type vertex -label range -regex bar --idOnly`
+```
+$myIds = node .\lib\search.js -type vertex -label range -regex bar --idOnly
+```
 
 Now we can run the graph tool passing the ids we found:
 
-`> node .\lib\graph.js $(echo $myIds)`
+```
+node .\lib\graph.js $(echo $myIds)
+```
 
 This is the result:
 
