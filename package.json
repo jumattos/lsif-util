@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Utility tools for LSIF",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jumattos/lsif-util.git"
+  },
   "directories": {
     "lib": "lib"
   },
@@ -23,7 +27,7 @@
   "dependencies": {
     "fs-extra": "^7.0.1",
     "jsonschema": "^1.2.4",
-    "lsif-protocol": "^0.2.3",
+    "lsif-protocol": "0.3.1",
     "typescript-json-schema": "^0.36.0"
   }
 }
