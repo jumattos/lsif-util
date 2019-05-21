@@ -3,7 +3,6 @@ import { validate as validateSchema, ValidationError, ValidatorResult } from 'js
 import * as LSIF from 'lsif-protocol';
 import * as TJS from 'typescript-json-schema';
 
-let inputPath: string = './lsif.json';
 const protocolPath: string = './node_modules/lsif-protocol/lib/protocol.d.ts';
 
 const vertices: { [id: string]: Element } = {};
@@ -11,13 +10,12 @@ const edges: { [id: string]: Element } = {};
 const visited: { [id: string]: boolean } = {};
 
 const errors: Error[] = [];
-const checks: boolean[] = [];
 
-const numOfChecks: number = 2;
 enum Check {
     vertexBeforeEdge = 0,
     allVerticesUsed
 }
+const checks = new Array<boolean>(Object.keys(Check).length/2).fill(true);
 
 class Error {
     public element: LSIF.Element;
@@ -61,25 +59,7 @@ class Statistics {
     }
 }
 
-async function main(argc: number, argv: string[]): Promise<void> {
-    for (let i: number = 2; i < argc; i++) {
-        switch (argv[i]) {
-            case '--inputPath': case '-p':
-                inputPath = argv[++i];
-                break;
-            default:
-                console.error(`Unknown option: ${argv[i]}`);
-        }
-    }
-
-    for (let i: number = 0; i < numOfChecks; i++) {
-        checks.push(true);
-    }
-
-    await validate(await fse.readJSON(inputPath));
-}
-
-async function validate(toolOutput: LSIF.Element[]): Promise<boolean> {
+export async function validate(toolOutput: LSIF.Element[], ids: string[]): Promise<boolean> {
     readInput(toolOutput);
 
     checkAllVisited();
@@ -227,9 +207,6 @@ function getCheckMessage(check: Check): string {
             return 'vertices emitted before connecting edges';
         case Check.allVerticesUsed:
             return 'all vertices are used in at least one edge';
-        // WIP
-        // case Check.edgeDefinedVertices:
-        //     return "edges exist only between defined vertices";
         default:
             return 'unexpected check';
     }
@@ -237,7 +214,7 @@ function getCheckMessage(check: Check): string {
 
 function printOutput(): void {
     console.log('\nResults:');
-    for (let i: number = 0; i < numOfChecks; i++) {
+    for (let i: number = 0; i < Object.keys(Check).length/2; i++) {
         console.log(`\t${checks[i] ? 'PASS' : 'FAIL'}> ${getCheckMessage(i)}`);
     }
     console.log();
@@ -271,4 +248,3 @@ function getStatistics(elements: { [id: string]: Element }): Statistics {
     return new Statistics(passed, failed);
 }
 
-main(process.argv.length, process.argv);
