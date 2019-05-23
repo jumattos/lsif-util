@@ -5,6 +5,7 @@ import { validate } from './validate';
 import { visualize } from './visualize';
 
 function getInput(format: any, path: string): LSIF.Element[] {
+    // TODO: support stdin (using the stdin flag or special file name `-`)
     switch (format) {
         case 'json':
             return fse.readJSONSync(path);
@@ -15,6 +16,7 @@ function getInput(format: any, path: string): LSIF.Element[] {
 
 export async function main() {
     yargs
+    .usage('Usage: $0 [validate|visualize] [file] --inputFormat=[line|json] [filters]')
     .command('validate [file]', '', yargs => {
         return yargs.positional('file', {
             describe: 'input file',
@@ -31,7 +33,15 @@ export async function main() {
     }, argv => {
         visualize(getInput(argv.inputFormat, argv.file), []);
     })
+    .demandCommand(1, 1) // One and only one command should be specified
     .option('inputFormat', { default: 'line', choices: ['line', 'json'], description: 'Specify input format' })
+    .boolean('stdin')
+    .option('id', { default: [], type: 'string', array: true, description: 'Filter by id' })
+    .fail((message, error) => {
+        if (error) throw error;
+        console.error(message);
+        process.exit(1);
+    })
     .argv;
 }
 
