@@ -83,13 +83,14 @@ export async function main() {
     .option('type', { default: [], type: 'string', array: true, description: 'Filter by type' })
     .option('label', { default: [], type: 'string', array: true, description: 'Filter by label' })
     .option('property', { default: [], type: 'string', array: true, description: 'Filter by property' })
-    .option('regex', { default: [], type: 'string', description: 'Filter by regex' })
+    .option('regex', { type: 'string', description: 'Filter by regex' })
     .fail((message, error) => {
         if (error) throw error;
         yargs.showHelp('log');
         console.error(`\nError: ${message}`);
         process.exit(1);
     })
+    .help('info', 'Show usage information')
     .argv;
 }
 
