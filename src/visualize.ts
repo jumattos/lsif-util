@@ -57,6 +57,12 @@ function printDOT(edges: { [id: string]: LSIF.Element }, vertices: { [id: string
         const vertex: LSIF.Vertex = <LSIF.Vertex> vertices[key];
         let extraText: string = '';
         const extraInfo: LSIF.Vertex = JSON.parse(JSON.stringify(vertex));
+
+        // Special case for documents: deleting the long and (visually) unuseful "content" property
+        if (extraInfo.label === 'document') {
+            delete extraInfo.contents;
+        }
+
         delete extraInfo.id;
         delete extraInfo.label;
         delete extraInfo.type;
