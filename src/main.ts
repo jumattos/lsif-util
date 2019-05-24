@@ -39,7 +39,8 @@ export async function main() {
     .option('id', { default: [], type: 'string', array: true, description: 'Filter by id' })
     .fail((message, error) => {
         if (error) throw error;
-        console.error(message);
+        yargs.showHelp('log');
+        console.error(`\nError: ${message}`);
         process.exit(1);
     })
     .argv;
