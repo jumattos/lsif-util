@@ -1,9 +1,8 @@
 import * as LSIF from 'lsif-protocol';
 
-export function visualize(toolOutput: LSIF.Element[], ids: string[]): number {
+export function visualize(toolOutput: LSIF.Element[], ids: string[], distance: number): number {
     const edges: { [id: string]: LSIF.Element } = {};
     const vertices: { [id: string]: LSIF.Element } = {};
-    let distance: number = 1;
 
     const allEdges: LSIF.Element[] = toolOutput.filter((element: LSIF.Element) => element.type === 'edge');
     let idQueue: string[] = [];

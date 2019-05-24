@@ -15,12 +15,6 @@ function getInput(format: any, path: string): LSIF.Element[] {
     }
 }
 
-function runCommand(command: (input: LSIF.Element[], ids: string[]) => number, argv: yargs.Arguments<{ file: string }>) {
-    const input = getInput(argv.inputFormat, argv.file);
-    const filter = <IFilter> <unknown>argv;
-    command(input, getFilteredIds(filter, input));
-}
-
 async function main() {
     yargs
     .usage('Usage: $0 [validate|visualize] [file] --inputFormat=[line|json] [filters]')
@@ -30,15 +24,24 @@ async function main() {
             default: './lsif.json'
         })
     }, argv => {
-        runCommand(validate, argv);
+        const input = getInput(argv.inputFormat, argv.file);
+        const filter = <IFilter> <unknown>argv;
+        validate(input, getFilteredIds(filter, input));
     })
     .command('visualize [file]', '', yargs => {
-        return yargs.positional('file', {
+        return yargs
+        .positional('file', {
             describe: 'input file',
             default: './lsif.json'
         })
+        .option('distance', {
+            describe: 'Max distance between any vertex and the filtered input',
+            default: 1
+        })
     }, argv => {
-        runCommand(visualize, argv);
+        const input = getInput(argv.inputFormat, argv.file);
+        const filter = <IFilter> <unknown>argv;
+        visualize(input, getFilteredIds(filter, input), argv.distance);
     })
     .demandCommand(1, 1) // One and only one command should be specified
     .option('inputFormat', { default: 'line', choices: ['line', 'json'], description: 'Specify input format' })
