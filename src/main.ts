@@ -1,13 +1,9 @@
 import * as fse from 'fs-extra';
 import * as LSIF from 'lsif-protocol';
 import * as yargs from 'yargs';
+import { getFilteredIds, IFilter } from './filter';
 import { validate } from './validate';
 import { visualize } from './visualize';
-
-interface IParameter extends LSIF.Element {
-    property: string;
-    label: string;
-}
 
 function getInput(format: any, path: string): LSIF.Element[] {
     // TODO: support stdin (using the stdin flag or special file name `-`)
@@ -19,41 +15,13 @@ function getInput(format: any, path: string): LSIF.Element[] {
     }
 }
 
-function getIds(argv: yargs.Arguments, input: LSIF.Element[]): string[] {
-    let result: LSIF.Element[] = input;
-    let { id, inV, outV, type, label, property, regex } = argv;
-
-    result = result.filter(element => filter(id, element.id));
-    result = result.filter(element => {
-        const edge = element as LSIF.Edge;
-        return filter(inV, edge.inV);
-    });
-    result = result.filter(element => {
-        const edge = element as LSIF.Edge;
-        return filter(outV, edge.outV);
-    });
-    result = result.filter(element => element.type && filter(type, element.type));
-    result = result.filter(element => {
-        const param = element as IParameter;
-        return filter(label, param.label);
-    });
-    result = result.filter(element => {
-        const param = element as IParameter;
-        return filter(property, param.property);
-    });
-    result = result.filter(element => {
-        return regex && new RegExp(regex as string).test(JSON.stringify(element));
-    });
-
-    return result.map(element => element.id.toString());
+function runCommand(command: (input: LSIF.Element[], ids: string[]) => number, argv: yargs.Arguments<{ file: string }>) {
+    const input = getInput(argv.inputFormat, argv.file);
+    const filter = <IFilter> <unknown>argv;
+    command(input, getFilteredIds(filter, input));
 }
 
-function filter(object: any, id: string | number) {
-    let array = object as string[];
-    return array.length > 0 ? id && array.includes(id.toString()) : true;
-}
-
-export async function main() {
+async function main() {
     yargs
     .usage('Usage: $0 [validate|visualize] [file] --inputFormat=[line|json] [filters]')
     .command('validate [file]', '', yargs => {
@@ -62,8 +30,7 @@ export async function main() {
             default: './lsif.json'
         })
     }, argv => {
-        const input = getInput(argv.inputFormat, argv.file);
-        validate(input, getIds(argv, input));
+        runCommand(validate, argv);
     })
     .command('visualize [file]', '', yargs => {
         return yargs.positional('file', {
@@ -71,8 +38,7 @@ export async function main() {
             default: './lsif.json'
         })
     }, argv => {
-        const input = getInput(argv.inputFormat, argv.file);
-        visualize(input, getIds(argv, input));
+        runCommand(visualize, argv);
     })
     .demandCommand(1, 1) // One and only one command should be specified
     .option('inputFormat', { default: 'line', choices: ['line', 'json'], description: 'Specify input format' })

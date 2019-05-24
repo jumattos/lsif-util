@@ -1,6 +1,6 @@
 import * as LSIF from 'lsif-protocol';
 
-export function visualize(toolOutput: LSIF.Element[], ids: string[]): void {
+export function visualize(toolOutput: LSIF.Element[], ids: string[]): number {
     const edges: { [id: string]: LSIF.Element } = {};
     const vertices: { [id: string]: LSIF.Element } = {};
     let distance: number = 1;
@@ -34,6 +34,8 @@ export function visualize(toolOutput: LSIF.Element[], ids: string[]): void {
     });
 
     printDOT(edges, vertices);
+    
+    return 0;
 }
 
 function printDOT(edges: { [id: string]: LSIF.Element }, vertices: { [id: string]: LSIF.Element }): void {

@@ -11,7 +11,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "compile": "tsc -p ./",
     "lint": "tslint --fix ./src/*.ts"
   },
@@ -19,8 +19,10 @@
   "license": "ISC",
   "devDependencies": {
     "@types/fs-extra": "^5.0.5",
+    "@types/jest": "^24.0.13",
     "@types/node": "^11.11.0",
     "@types/yargs": "^13.0.0",
+    "jest": "^24.8.0",
     "tslint": "^5.14.0",
     "tslint-microsoft-contrib": "^6.1.0",
     "typescript": "^3.3.3333",
@@ -31,5 +33,8 @@
     "jsonschema": "^1.2.4",
     "lsif-protocol": "0.3.1",
     "typescript-json-schema": "^0.36.0"
+  },
+  "jest": {
+    "testRegex": "lib/test/([^/]+)\\.js$"
   }
 }

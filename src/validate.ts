@@ -59,12 +59,12 @@ class Statistics {
     }
 }
 
-export async function validate(toolOutput: LSIF.Element[], ids: string[]): Promise<boolean> {
+export function validate(toolOutput: LSIF.Element[], ids: string[]): number {
     readInput(toolOutput);
 
     checkAllVisited();
 
-    if (await fse.pathExists(protocolPath)) {
+    if (fse.pathExistsSync(protocolPath)) {
         checkVertices();
         checkEdges();
     } else {
@@ -73,7 +73,7 @@ export async function validate(toolOutput: LSIF.Element[], ids: string[]): Promi
 
     printOutput();
 
-    return errors.length === 0;
+    return errors.length === 0 ? 0 : 1;
 }
 
 function readInput(toolOutput: LSIF.Element[]): void {
