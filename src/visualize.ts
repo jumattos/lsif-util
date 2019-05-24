@@ -6,11 +6,22 @@ export function visualize(toolOutput: LSIF.Element[], ids: string[]): number {
     let distance: number = 1;
 
     const allEdges: LSIF.Element[] = toolOutput.filter((element: LSIF.Element) => element.type === 'edge');
-    let idQeue: string[] = ids;
+    let idQueue: string[] = [];
+    ids.forEach(id => {
+        const element = toolOutput.filter(element => element.id.toString() === id)[0];
+        if (element.type === 'edge') {
+            const edge = element as LSIF.Edge;
+            idQueue.push(edge.inV.toString(), edge.outV.toString());
+        }
+        else {
+            idQueue.push(element.id.toString())
+        }
+    });
+
     while (distance > 0) {
         distance--;
-        ids = idQeue;
-        idQeue = [];
+        ids = idQueue;
+        idQueue = [];
 
         allEdges.forEach((element: LSIF.Element) => {
             const edge: LSIF.Edge = <LSIF.Edge> element;
@@ -18,7 +29,7 @@ export function visualize(toolOutput: LSIF.Element[], ids: string[]): number {
             const outV: string = edge.outV.toString();
             if (ids.includes(inV) || ids.includes(outV)) {
                 edges[edge.id] = edge;
-                idQeue.push(inV, outV);
+                idQueue.push(inV, outV);
             }
         });
     }
