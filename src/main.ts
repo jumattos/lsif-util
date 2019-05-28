@@ -5,6 +5,7 @@ import * as yargs from 'yargs';
 import { getFilteredIds, IFilter } from './filter';
 import { validate } from './validate';
 import { visualize } from './visualize';
+import { exit } from 'process';
 
 function readInput(format: string, path: string, callback: (input: LSIF.Element[]) => void): void {
     let inputStream: NodeJS.ReadStream | fse.ReadStream = process.stdin;
@@ -46,7 +47,7 @@ function main(): void {
         }),  (argv: yargs.Arguments<{ stdin: boolean; file: string; inputFormat: string }>) => {
             readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, (input: LSIF.Element[]) => {
                 const filter: IFilter = <IFilter> <unknown>argv;
-                validate(input, getFilteredIds(filter, input));
+                exit(validate(input, getFilteredIds(filter, input)));
             });
         })
 
@@ -62,7 +63,7 @@ function main(): void {
         }),  (argv: yargs.Arguments<{ stdin: boolean; file: string; inputFormat: string; distance: number }>) => {
             readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, (input: LSIF.Element[]) => {
                 const filter: IFilter = <IFilter> <unknown>argv;
-                visualize(input, getFilteredIds(filter, input), argv.distance);
+                exit(visualize(input, getFilteredIds(filter, input), argv.distance));
             });
         })
 
