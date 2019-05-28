@@ -1,11 +1,11 @@
 import * as fse from 'fs-extra';
 import * as LSIF from 'lsif-protocol';
+import { exit } from 'process';
 import * as readline from 'readline';
 import * as yargs from 'yargs';
 import { getFilteredIds, IFilter } from './filter';
 import { validate } from './validate';
 import { visualize } from './visualize';
-import { exit } from 'process';
 
 function readInput(format: string, path: string, callback: (input: LSIF.Element[]) => void): void {
     let inputStream: NodeJS.ReadStream | fse.ReadStream = process.stdin;
