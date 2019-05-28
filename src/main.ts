@@ -28,7 +28,7 @@ function readInput(format: any, path: string, callback: (input: LSIF.Element[]) 
 
     rd.on('close', () => {
         if (buffer.length > 0) {
-            input = JSON.parse(buffer.join());
+            input = JSON.parse(buffer.join('\n'));
         }
 
         callback(input);
