@@ -19,8 +19,10 @@ function readInput(format: any, path: string, callback: (input: LSIF.Element[]) 
         switch (format) {
             case 'json':
                 buffer.push(line);
+                break;
             case 'line': default:
                 input.push(JSON.parse(line));
+                break;
         }
     });
 
