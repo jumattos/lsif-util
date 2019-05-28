@@ -28,7 +28,7 @@ class Error {
 
     public print(): void {
         console.error(
-            `${this.element.type.toUpperCase()} ${this.element.id}: FAIL> ${this.message}\n${JSON.stringify(this.element, undefined, 2)}`
+            `\n${this.element.type.toUpperCase()} ${this.element.id}: FAIL> ${this.message}\n${JSON.stringify(this.element, undefined, 2)}`
         );
     }
 }
@@ -65,13 +65,19 @@ export function validate(toolOutput: LSIF.Element[], ids: string[]): number {
     checkAllVisited();
 
     if (fse.pathExistsSync(protocolPath)) {
-        checkVertices();
-        checkEdges();
+        checkVertices(ids.filter(id => {
+            const element = toolOutput.filter(element => element.id.toString() === id)[0];
+            return element.type === 'vertex';
+        }));
+        checkEdges(ids.filter(id => {
+            const element = toolOutput.filter(element => element.id.toString() === id)[0];
+            return element.type === 'edge';
+        }));
     } else {
         console.warn('Skipping thorough validation: protocol.d.ts was not found');
     }
 
-    printOutput();
+    printOutput(ids);
 
     return errors.length === 0 ? 0 : 1;
 }
@@ -119,15 +125,14 @@ function checkAllVisited(): void {
     });
 }
 
-function checkVertices(): void {
+function checkVertices(ids: string[]): void {
     let outputMessage: string;
     const program: TJS.Program = TJS.getProgramFromFiles([protocolPath]);
     const vertexSchema: TJS.Definition = TJS.generateSchema(program, 'Vertex', { required: true });
     let count: number = 1;
-    const length: number = Object.keys(vertices).length;
+    const length: number = ids.length;
 
-    Object.keys(vertices)
-    .forEach((key: string) => {
+    ids.forEach((key: string) => {
         const vertex: LSIF.Vertex = <LSIF.Vertex> vertices[key].element;
         outputMessage = `Verifying vertex ${count} of ${length}...`;
         process.stdout.write(`${outputMessage}\r`);
@@ -162,18 +167,20 @@ function checkVertices(): void {
             errors.push(new Error(vertex, errorMessage));
         }
     });
-    console.log(`${outputMessage} done`);
+
+    if (outputMessage) {
+        console.log(`${outputMessage} done`);
+    }
 }
 
-function checkEdges(): void {
+function checkEdges(ids: string[]): void {
     let outputMessage: string;
     const program: TJS.Program = TJS.getProgramFromFiles([protocolPath]);
     const edgeSchema: TJS.Definition = TJS.generateSchema(program, 'Edge', { required: true, noExtraProps: true });
     let count: number = 1;
-    const length: number = Object.keys(edges).length;
+    const length: number = ids.length;
 
-    Object.keys(edges)
-    .forEach((key: string) => {
+    ids.forEach((key: string) => {
         const edge: LSIF.Edge = <LSIF.Edge> edges[key].element;
         outputMessage = `Verifying edge ${count} of ${length}...`;
         process.stdout.write(`${outputMessage}\r`);
@@ -198,7 +205,10 @@ function checkEdges(): void {
             errors.push(new Error(edges[key].element, errorMessage));
         }
     });
-    console.log(`${outputMessage} done`);
+    
+    if (outputMessage) {
+        console.log(`${outputMessage} done`);
+    }
 }
 
 function getCheckMessage(check: Check): string {
@@ -212,36 +222,40 @@ function getCheckMessage(check: Check): string {
     }
 }
 
-function printOutput(): void {
+function printOutput(ids: string[]): void {
     console.log('\nResults:');
     for (let i: number = 0; i < Object.keys(Check).length/2; i++) {
         console.log(`\t${checks[i] ? 'PASS' : 'FAIL'}> ${getCheckMessage(i)}`);
     }
     console.log();
 
-    const verticesStats: Statistics = getStatistics(vertices);
+    const verticesStats: Statistics = getStatistics(vertices, ids);
     console.log(`Vertices:\t${verticesStats.passed} passed, ${verticesStats.failed} failed, ${verticesStats.total} total`);
 
-    const edgesStats: Statistics = getStatistics(edges);
+    const edgesStats: Statistics = getStatistics(edges, ids);
     console.log(`Edges:\t\t${edgesStats.passed} passed, ${edgesStats.failed} failed, ${edgesStats.total} total`);
 
     errors.forEach((e: Error) => {
-        console.log();
-        e.print();
+        // Only print error for the elements verified
+        if (ids.includes(e.element.id.toString())) {
+            e.print();
+        }
     });
 }
 
-function getStatistics(elements: { [id: string]: Element }): Statistics {
+function getStatistics(elements: { [id: string]: Element }, ids: string[]): Statistics {
     let passed: number = 0;
     let failed: number = 0;
 
     Object.keys(elements)
     .forEach((key: string) => {
-        const element: Element = elements[key];
-        if (element.valid) {
-            passed++;
-        } else {
-            failed++;
+        if (ids.includes(key)) {
+            const element: Element = elements[key];
+            if (element.valid) {
+                passed++;
+            } else {
+                failed++;
+            }
         }
     });
 
