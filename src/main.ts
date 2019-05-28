@@ -6,23 +6,22 @@ import { getFilteredIds, IFilter } from './filter';
 import { validate } from './validate';
 import { visualize } from './visualize';
 
-function readInput(format: any, path: string, callback: (input: LSIF.Element[]) => void) {
+function readInput(format: string, path: string, callback: (input: LSIF.Element[]) => void): void {
     let inputStream: NodeJS.ReadStream | fse.ReadStream = process.stdin;
-    if (path) {
+    if (path !== undefined) {
         inputStream = fse.createReadStream(path);
     }
 
     let input: LSIF.Element[] = [];
-    let buffer: string[] = [];
-    const rd = readline.createInterface(inputStream);
-    rd.on('line', line => {
+    const buffer: string[] = [];
+    const rd: readline.Interface = readline.createInterface(inputStream);
+    rd.on('line', (line: string) => {
         switch (format) {
             case 'json':
                 buffer.push(line);
                 break;
             case 'line': default:
                 input.push(JSON.parse(line));
-                break;
         }
     });
 
@@ -35,22 +34,24 @@ function readInput(format: any, path: string, callback: (input: LSIF.Element[]) 
     });
 }
 
-async function main() {
+function main(): void {
     yargs
     .usage('Usage: $0 [validate|visualize] [file] --inputFormat=[line|json] [filters]')
-    .command('validate [file]', '', yargs => {
-        return yargs.positional('file', {
+
+    // Validation tool
+    .command('validate [file]', '', (argv: yargs.Argv) => argv
+        .positional('file', {
             describe: 'input file',
             default: './lsif.json'
+        }),  (argv: yargs.Arguments<{ stdin: boolean; file: string; inputFormat: string }>) => {
+            readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, (input: LSIF.Element[]) => {
+                const filter: IFilter = <IFilter> <unknown>argv;
+                validate(input, getFilteredIds(filter, input));
+            });
         })
-    }, argv => {
-        readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, input => {
-            const filter = <IFilter> <unknown>argv;
-            validate(input, getFilteredIds(filter, input));
-        });
-    })
-    .command('visualize [file]', '', yargs => {
-        return yargs
+
+    // Visualization tool
+    .command('visualize [file]', '', (argv: yargs.Argv) => argv
         .positional('file', {
             describe: 'input file',
             default: './lsif.json'
@@ -58,14 +59,17 @@ async function main() {
         .option('distance', {
             describe: 'Max distance between any vertex and the filtered input',
             default: 1
+        }),  (argv: yargs.Arguments<{ stdin: boolean; file: string; inputFormat: string; distance: number }>) => {
+            readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, (input: LSIF.Element[]) => {
+                const filter: IFilter = <IFilter> <unknown>argv;
+                visualize(input, getFilteredIds(filter, input), argv.distance);
+            });
         })
-    }, argv => {
-        readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, input => {
-            const filter = <IFilter> <unknown>argv;
-            visualize(input, getFilteredIds(filter, input), argv.distance);
-        });
-    })
-    .demandCommand(1, 1) // One and only one command should be specified
+
+    // One and only one command should be specified
+    .demandCommand(1, 1)
+
+    // Common options between tools
     .option('inputFormat', { default: 'line', choices: ['line', 'json'], description: 'Specify input format' })
     .boolean('stdin')
     .option('id', { default: [], type: 'string', array: true, description: 'Filter by id' })
@@ -75,12 +79,18 @@ async function main() {
     .option('label', { default: [], type: 'string', array: true, description: 'Filter by label' })
     .option('property', { default: [], type: 'string', array: true, description: 'Filter by property' })
     .option('regex', { type: 'string', description: 'Filter by regex' })
-    .fail((message, error) => {
-        if (error) throw error;
+
+    // Error handler
+    .fail((message: string, error: Error) => {
+        if (error !== undefined) {
+            throw error;
+        }
         yargs.showHelp('log');
         console.error(`\nError: ${message}`);
         process.exit(1);
     })
+
+    // Auto-generated help
     .help('info', 'Show usage information')
     .argv;
 }

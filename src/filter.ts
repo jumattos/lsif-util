@@ -1,13 +1,13 @@
 import * as LSIF from 'lsif-protocol';
 
 export interface IFilter {
-    id: string[],
-    inV: string[],
-    outV: string[],
-    type: string[],
-    label: string[],
-    property: string[],
-    regex: string
+    id: string[];
+    inV: string[];
+    outV: string[];
+    type: string[];
+    label: string[];
+    property: string[];
+    regex: string;
 }
 
 interface IParameter extends LSIF.Element {
@@ -17,33 +17,37 @@ interface IParameter extends LSIF.Element {
 
 export function getFilteredIds(argv: IFilter, input: LSIF.Element[]): string[] {
     let result: LSIF.Element[] = input;
-    let { id, inV, outV, type, label, property, regex } = argv;
+    const { id, inV, outV, type, label, property, regex } = argv;
 
-    result = result.filter(element => includes(id, element.id));
-    result = result.filter(element => {
-        const edge = element as LSIF.Edge;
+    result = result.filter((element: LSIF.Element) => includes(id, element.id));
+    result = result.filter((element: LSIF.Element) => {
+        const edge: LSIF.Edge = <LSIF.Edge> element;
+
         return includes(inV, edge.inV);
     });
-    result = result.filter(element => {
-        const edge = element as LSIF.Edge;
+    result = result.filter((element: LSIF.Element) => {
+        const edge: LSIF.Edge = <LSIF.Edge> element;
+
         return includes(outV, edge.outV);
     });
-    result = result.filter(element => element.type && includes(type, element.type));
-    result = result.filter(element => {
-        const param = element as IParameter;
+    result = result.filter((element: LSIF.Element) => element.type !== undefined && includes(type, element.type));
+    result = result.filter((element: LSIF.Element) => {
+        const param: IParameter = <IParameter> element;
+
         return includes(label, param.label);
     });
-    result = result.filter(element => {
-        const param = element as IParameter;
+    result = result.filter((element: LSIF.Element) => {
+        const param: IParameter = <IParameter> element;
+
         return includes(property, param.property);
     });
-    result = result.filter(element => {
-        return regex ? new RegExp(regex as string).test(JSON.stringify(element)) : true;
+    result = result.filter((element: LSIF.Element) => {
+        return regex !== undefined ? new RegExp(regex).test(JSON.stringify(element)) : true;
     });
 
-    return result.map(element => element.id.toString());
+    return result.map((element: LSIF.Element) => element.id.toString());
 }
 
-function includes(array: string[], id: string | number) {
-    return array.length > 0 ? id && array.includes(id.toString()) : true;
+function includes(array: string[], id: string | number): boolean {
+    return array.length > 0 ? id !== undefined && array.includes(id.toString()) : true;
 }

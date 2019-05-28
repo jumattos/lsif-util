@@ -15,7 +15,7 @@ enum Check {
     vertexBeforeEdge = 0,
     allVerticesUsed
 }
-const checks = new Array<boolean>(Object.keys(Check).length/2).fill(true);
+const checks: boolean[] = [true, true];
 
 class Error {
     public element: LSIF.Element;
@@ -65,12 +65,14 @@ export function validate(toolOutput: LSIF.Element[], ids: string[]): number {
     checkAllVisited();
 
     if (fse.pathExistsSync(protocolPath)) {
-        checkVertices(ids.filter(id => {
-            const element = toolOutput.filter(element => element.id.toString() === id)[0];
+        checkVertices(ids.filter((id: string) => {
+            const element: LSIF.Element = toolOutput.filter((e: LSIF.Element) => e.id.toString() === id)[0];
+
             return element.type === 'vertex';
         }));
-        checkEdges(ids.filter(id => {
-            const element = toolOutput.filter(element => element.id.toString() === id)[0];
+        checkEdges(ids.filter((id: string) => {
+            const element: LSIF.Element = toolOutput.filter((e: LSIF.Element) => e.id.toString() === id)[0];
+
             return element.type === 'edge';
         }));
     } else {
@@ -168,7 +170,7 @@ function checkVertices(ids: string[]): void {
         }
     });
 
-    if (outputMessage) {
+    if (outputMessage !== undefined) {
         console.log(`${outputMessage} done`);
     }
 }
@@ -205,8 +207,8 @@ function checkEdges(ids: string[]): void {
             errors.push(new Error(edges[key].element, errorMessage));
         }
     });
-    
-    if (outputMessage) {
+
+    if (outputMessage !== undefined) {
         console.log(`${outputMessage} done`);
     }
 }
@@ -224,7 +226,7 @@ function getCheckMessage(check: Check): string {
 
 function printOutput(ids: string[]): void {
     console.log('\nResults:');
-    for (let i: number = 0; i < Object.keys(Check).length/2; i++) {
+    for (let i: number = 0; i < checks.length; i++) {
         console.log(`\t${checks[i] ? 'PASS' : 'FAIL'}> ${getCheckMessage(i)}`);
     }
     console.log();
@@ -261,4 +263,3 @@ function getStatistics(elements: { [id: string]: Element }, ids: string[]): Stat
 
     return new Statistics(passed, failed);
 }
-

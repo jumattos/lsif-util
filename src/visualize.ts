@@ -3,30 +3,29 @@ import * as LSIF from 'lsif-protocol';
 export function visualize(toolOutput: LSIF.Element[], ids: string[], distance: number): number {
     const edges: { [id: string]: LSIF.Element } = {};
     const vertices: { [id: string]: LSIF.Element } = {};
-
     const allEdges: LSIF.Element[] = toolOutput.filter((element: LSIF.Element) => element.type === 'edge');
+
     let idQueue: string[] = [];
-    ids.forEach(id => {
-        const element = toolOutput.filter(element => element.id.toString() === id)[0];
+    ids.forEach((id: string) => {
+        const element: LSIF.Element = toolOutput.filter((e: LSIF.Element) => e.id.toString() === id)[0];
         if (element.type === 'edge') {
-            const edge = element as LSIF.Edge;
+            const edge: LSIF.Edge = <LSIF.Edge> element;
             idQueue.push(edge.inV.toString(), edge.outV.toString());
-        }
-        else {
-            idQueue.push(element.id.toString())
+        } else {
+            idQueue.push(element.id.toString());
         }
     });
 
-    while (distance > 0) {
-        distance--;
-        ids = idQueue;
+    let targetIds: string[];
+    for (let i: number = 0; i < distance; i++) {
+        targetIds = idQueue;
         idQueue = [];
 
         allEdges.forEach((element: LSIF.Element) => {
             const edge: LSIF.Edge = <LSIF.Edge> element;
             const inV: string = edge.inV.toString();
             const outV: string = edge.outV.toString();
-            if (ids.includes(inV) || ids.includes(outV)) {
+            if (targetIds.includes(inV) || targetIds.includes(outV)) {
                 edges[edge.id] = edge;
                 idQueue.push(inV, outV);
             }
@@ -44,7 +43,7 @@ export function visualize(toolOutput: LSIF.Element[], ids: string[], distance: n
     });
 
     printDOT(edges, vertices);
-    
+
     return 0;
 }
 
