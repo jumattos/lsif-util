@@ -7,7 +7,7 @@ export interface IFilter {
     type: string[];
     label: string[];
     property: string[];
-    regex: string;
+    regex: string | undefined;
 }
 
 interface IParameter extends LSIF.Element {

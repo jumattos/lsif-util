@@ -27,6 +27,21 @@ node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdi
 |---------------|------------------------------------------------|---------|
 | --inputFormat | Specify input format (choices: "line", "json") | line    |
 | --stdin       | Read from standard input                       | false   |
+
+``` bash
+node .\lib\main.js (validate|visualize) [file] --inputFormat (line|json) [filters]
+```
+
+You can use the `--stdin` flag to pipe LSIF output:
+``` bash
+lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
+```
+
+### Filters
+
+Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common properties in LSIF:
+
+| Filter        | Description                                    | Default |
 | --id          | Filter by id                                   | []      |
 | --inV         | Filter by inV                                  | []      |
 | --outV        | Filter by outV                                 | []      |
@@ -35,19 +50,14 @@ node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdi
 | --property    | Filter by property                             | []      |
 | --regex       | Filter by regex                                | none    |
 
-Validating outgoing edges from vertex 1:
+Validating outgoing edges from vertices 1, 2 or 3:
 ``` bash
-node .\lib\main.js validate .\example\line.json --outV 1
+node .\lib\main.js validate .\example\line.json --outV 1 2 3
 ```
 
-Visualizing ranges:
+Visualizing ranges that have "foo" somewhere in them:
 ``` bash
-node .\lib\main.js visualize .\example\line.json --label range
-```
-
-Piping LSIF output:
-``` bash
-lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
+node .\lib\main.js visualize .\example\line.json --label range --regex foo
 ```
 
 ## Validation
@@ -56,8 +66,8 @@ Returns whether the LSIF input file is **syntatically** valid or not.
 
 Verifies the following:
 
-* Vertices properties are correct
-* Edges properties are correct
+* Vertex properties are correct
+* Edge properties are correct
 * Vertices are emitted before connecting edges
 * Vertices are used in at least one edge (except metadata)
 * [WIP] Edges exist only between defined vertices
