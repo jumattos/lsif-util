@@ -28,10 +28,6 @@ node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdi
 | --inputFormat | Specify input format (choices: "line", "json") | line    |
 | --stdin       | Read from standard input                       | false   |
 
-``` bash
-node .\lib\main.js (validate|visualize) [file] --inputFormat (line|json) [filters]
-```
-
 You can use the `--stdin` flag to pipe LSIF output:
 ``` bash
 lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
@@ -42,6 +38,7 @@ lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
 Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common properties in LSIF:
 
 | Filter        | Description                                    | Default |
+|---------------|------------------------------------------------|---------|
 | --id          | Filter by id                                   | []      |
 | --inV         | Filter by inV                                  | []      |
 | --outV        | Filter by outV                                 | []      |
