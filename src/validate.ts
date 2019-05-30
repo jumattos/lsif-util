@@ -135,6 +135,7 @@ function checkAllVisited(): void {
         if (!visited[key] && vertex.label !== 'metaData') {
             errors.push(new Error(vertex, `not connected to any other vertex`));
             checks[Check.allVerticesUsed] = false;
+            vertices[key].invalidate();
         }
     });
 }
