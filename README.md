@@ -13,13 +13,18 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 * _We are moving!_ The lsif-util tools will soon migrate to [lsif-node](https://github.com/microsoft/lsif-node)
 * _Getting official!_ Global npm package is on the way
 
-## Usage
+## Installation
 
 ``` bash
 git clone https://github.com/jumattos/lsif-util.git
 cd lsif-util
 npm install
 npm run compile
+```
+
+## Usage
+
+``` bash
 node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdin] [filters]
 ```
 
