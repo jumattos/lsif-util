@@ -35,17 +35,17 @@ lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
 
 ### Filters
 
-Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common properties in LSIF:
+Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common element properties in LSIF:
 
-| Filter        | Description                                    | Default |
-|---------------|------------------------------------------------|---------|
-| --id          | Filter by id                                   | []      |
-| --inV         | Filter by inV                                  | []      |
-| --outV        | Filter by outV                                 | []      |
-| --type        | Filter by type                                 | []      |
-| --label       | Filter by label                                | []      |
-| --property    | Filter by property                             | []      |
-| --regex       | Filter by regex                                | none    |
+| Property   | Node        | Example                |
+|------------|-------------|------------------------|
+| --id       | Vertex/Edge | 1 2 3                  |
+| --inV      | Edge        | 1 2 3                  |
+| --outV     | Edge        | 1 2 3                  |
+| --type     | Vertex/Edge | vertex edge            |
+| --label    | Vertex/Edge | project range item     |
+| --property | Edge        | references definitions |
+| --regex    | Vertex/Edge | none                   |
 
 Validating outgoing edges from vertices 1, 2 or 3:
 ``` bash
