@@ -35,7 +35,7 @@ lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
 
 ### Filters
 
-Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common element properties in LSIF:
+Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common properties in LSIF. Different values should be separated by **space**. The "regex" filter is a special case that only accepts one value.
 
 | Property   | Node        | Example                |
 |------------|-------------|------------------------|
