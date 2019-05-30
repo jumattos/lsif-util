@@ -28,10 +28,37 @@ node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdi
 | --inputFormat | Specify input format (choices: "line", "json") | line    |
 | --stdin       | Read from standard input                       | false   |
 
-You can use the `--stdin` flag to pipe LSIF output:
+You can use the `--stdin` flag to **pipe LSIF output**:
 ``` bash
 lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
 ```
+
+### Validation
+
+Returns whether the LSIF input file is **syntatically** valid or not.
+
+Verifies the following:
+
+* Vertex properties are correct
+* Edge properties are correct
+* Vertices are emitted before connecting edges
+* Vertices are used in at least one edge (except metadata)
+
+### Visualization
+
+| Option            | Default     | Description                                             |
+|-------------------|-------------|---------------------------------------------------------|
+| --distance        | 1           | Max distance between any vertex and the filtered input  |
+
+Outputs a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
+
+You can either visualize it online using [Viz.js](http://viz-js.com/) or install [Graphviz](http://graphviz.org/) and pipe it to the DOT tool:
+
+``` bash
+node .\lib\main.js visualize .\example\line.json --distance 2 | dot -Tpng -o image.png
+```
+
+![graph example](image/graphviz.png)
 
 ### Filters
 
@@ -56,31 +83,3 @@ Visualizing ranges that have "foo" somewhere in them:
 ``` bash
 node .\lib\main.js visualize .\example\line.json --label range --regex foo
 ```
-
-## Validation
-
-Returns whether the LSIF input file is **syntatically** valid or not.
-
-Verifies the following:
-
-* Vertex properties are correct
-* Edge properties are correct
-* Vertices are emitted before connecting edges
-* Vertices are used in at least one edge (except metadata)
-* [WIP] Edges exist only between defined vertices
-
-## Visualization
-
-| Option            | Default     | Description                                             |
-|-------------------|-------------|---------------------------------------------------------|
-| --distance        | 1           | Max distance between any vertex and the filtered input  |
-
-Outputs a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
-
-You can either visualize it online using [Viz.js](http://viz-js.com/) or install [Graphviz](http://graphviz.org/) and pipe it to the DOT tool:
-
-``` bash
-node .\lib\main.js visualize .\example\line.json --distance 2 --id 3 | dot -Tpng -o image.png
-```
-
-![graph example](image/graphviz.png)
