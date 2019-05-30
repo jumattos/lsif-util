@@ -3,7 +3,6 @@ import { validate as validateSchema, ValidationError, ValidatorResult } from 'js
 import * as LSIF from 'lsif-protocol';
 import * as TJS from 'typescript-json-schema';
 
-let inputPath: string = './lsif.json';
 const protocolPath: string = './node_modules/lsif-protocol/lib/protocol.d.ts';
 
 const vertices: { [id: string]: Element } = {};
@@ -11,13 +10,12 @@ const edges: { [id: string]: Element } = {};
 const visited: { [id: string]: boolean } = {};
 
 const errors: Error[] = [];
-const checks: boolean[] = [];
 
-const numOfChecks: number = 2;
 enum Check {
     vertexBeforeEdge = 0,
     allVerticesUsed
 }
+const checks: boolean[] = [true, true];
 
 class Error {
     public element: LSIF.Element;
@@ -30,7 +28,7 @@ class Error {
 
     public print(): void {
         console.error(
-            `${this.element.type.toUpperCase()} ${this.element.id}: FAIL> ${this.message}\n${JSON.stringify(this.element, undefined, 2)}`
+            `\n${this.element.type.toUpperCase()} ${this.element.id}: FAIL> ${this.message}\n${JSON.stringify(this.element, undefined, 2)}`
         );
     }
 }
@@ -61,39 +59,29 @@ class Statistics {
     }
 }
 
-async function main(argc: number, argv: string[]): Promise<void> {
-    for (let i: number = 2; i < argc; i++) {
-        switch (argv[i]) {
-            case '--inputPath': case '-p':
-                inputPath = argv[++i];
-                break;
-            default:
-                console.error(`Unknown option: ${argv[i]}`);
-        }
-    }
-
-    for (let i: number = 0; i < numOfChecks; i++) {
-        checks.push(true);
-    }
-
-    await validate(await fse.readJSON(inputPath));
-}
-
-async function validate(toolOutput: LSIF.Element[]): Promise<boolean> {
+export function validate(toolOutput: LSIF.Element[], ids: string[]): number {
     readInput(toolOutput);
 
     checkAllVisited();
 
-    if (await fse.pathExists(protocolPath)) {
-        checkVertices();
-        checkEdges();
+    if (fse.pathExistsSync(protocolPath)) {
+        checkVertices(ids.filter((id: string) => {
+            const element: LSIF.Element = toolOutput.filter((e: LSIF.Element) => e.id.toString() === id)[0];
+
+            return element.type === 'vertex';
+        }));
+        checkEdges(ids.filter((id: string) => {
+            const element: LSIF.Element = toolOutput.filter((e: LSIF.Element) => e.id.toString() === id)[0];
+
+            return element.type === 'edge';
+        }));
     } else {
         console.warn('Skipping thorough validation: protocol.d.ts was not found');
     }
 
-    printOutput();
+    printOutput(ids);
 
-    return errors.length === 0;
+    return errors.length === 0 ? 0 : 1;
 }
 
 function readInput(toolOutput: LSIF.Element[]): void {
@@ -139,15 +127,14 @@ function checkAllVisited(): void {
     });
 }
 
-function checkVertices(): void {
+function checkVertices(ids: string[]): void {
     let outputMessage: string;
     const program: TJS.Program = TJS.getProgramFromFiles([protocolPath]);
     const vertexSchema: TJS.Definition = TJS.generateSchema(program, 'Vertex', { required: true });
     let count: number = 1;
-    const length: number = Object.keys(vertices).length;
+    const length: number = ids.length;
 
-    Object.keys(vertices)
-    .forEach((key: string) => {
+    ids.forEach((key: string) => {
         const vertex: LSIF.Vertex = <LSIF.Vertex> vertices[key].element;
         outputMessage = `Verifying vertex ${count} of ${length}...`;
         process.stdout.write(`${outputMessage}\r`);
@@ -182,18 +169,20 @@ function checkVertices(): void {
             errors.push(new Error(vertex, errorMessage));
         }
     });
-    console.log(`${outputMessage} done`);
+
+    if (outputMessage !== undefined) {
+        console.log(`${outputMessage} done`);
+    }
 }
 
-function checkEdges(): void {
+function checkEdges(ids: string[]): void {
     let outputMessage: string;
     const program: TJS.Program = TJS.getProgramFromFiles([protocolPath]);
     const edgeSchema: TJS.Definition = TJS.generateSchema(program, 'Edge', { required: true, noExtraProps: true });
     let count: number = 1;
-    const length: number = Object.keys(edges).length;
+    const length: number = ids.length;
 
-    Object.keys(edges)
-    .forEach((key: string) => {
+    ids.forEach((key: string) => {
         const edge: LSIF.Edge = <LSIF.Edge> edges[key].element;
         outputMessage = `Verifying edge ${count} of ${length}...`;
         process.stdout.write(`${outputMessage}\r`);
@@ -218,7 +207,10 @@ function checkEdges(): void {
             errors.push(new Error(edges[key].element, errorMessage));
         }
     });
-    console.log(`${outputMessage} done`);
+
+    if (outputMessage !== undefined) {
+        console.log(`${outputMessage} done`);
+    }
 }
 
 function getCheckMessage(check: Check): string {
@@ -227,48 +219,47 @@ function getCheckMessage(check: Check): string {
             return 'vertices emitted before connecting edges';
         case Check.allVerticesUsed:
             return 'all vertices are used in at least one edge';
-        // WIP
-        // case Check.edgeDefinedVertices:
-        //     return "edges exist only between defined vertices";
         default:
             return 'unexpected check';
     }
 }
 
-function printOutput(): void {
+function printOutput(ids: string[]): void {
     console.log('\nResults:');
-    for (let i: number = 0; i < numOfChecks; i++) {
+    for (let i: number = 0; i < checks.length; i++) {
         console.log(`\t${checks[i] ? 'PASS' : 'FAIL'}> ${getCheckMessage(i)}`);
     }
     console.log();
 
-    const verticesStats: Statistics = getStatistics(vertices);
+    const verticesStats: Statistics = getStatistics(vertices, ids);
     console.log(`Vertices:\t${verticesStats.passed} passed, ${verticesStats.failed} failed, ${verticesStats.total} total`);
 
-    const edgesStats: Statistics = getStatistics(edges);
+    const edgesStats: Statistics = getStatistics(edges, ids);
     console.log(`Edges:\t\t${edgesStats.passed} passed, ${edgesStats.failed} failed, ${edgesStats.total} total`);
 
     errors.forEach((e: Error) => {
-        console.log();
-        e.print();
+        // Only print error for the elements verified
+        if (ids.includes(e.element.id.toString())) {
+            e.print();
+        }
     });
 }
 
-function getStatistics(elements: { [id: string]: Element }): Statistics {
+function getStatistics(elements: { [id: string]: Element }, ids: string[]): Statistics {
     let passed: number = 0;
     let failed: number = 0;
 
     Object.keys(elements)
     .forEach((key: string) => {
-        const element: Element = elements[key];
-        if (element.valid) {
-            passed++;
-        } else {
-            failed++;
+        if (ids.includes(key)) {
+            const element: Element = elements[key];
+            if (element.valid) {
+                passed++;
+            } else {
+                failed++;
+            }
         }
     });
 
     return new Statistics(passed, failed);
 }
-
-main(process.argv.length, process.argv);

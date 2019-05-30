@@ -15,5 +15,8 @@
         "completed-docs": false,
         "no-floating-promises": false,
         "linebreak-style": [true, "CRLF"],
+        "no-relative-imports": false,
+        "no-unused-expression": false,
+        "no-reserved-keywords": false
     }
 }

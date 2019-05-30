@@ -7,39 +7,24 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Graph",
-            "program": "${workspaceFolder}/lib/graph.js",
+            "name": "Visualize",
+            "program": "${workspaceFolder}/lib/main.js",
             "outFiles": [
 				"${workspaceFolder}/lib/**/*.js"
             ],
             "sourceMaps": true,
-            "args": [
-                "5"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Search",
-            "program": "${workspaceFolder}/lib/search.js",
-            "outFiles": [
-				"${workspaceFolder}/lib/**/*.js"
-            ],
-            "sourceMaps": true,
-            "args": [
-                "-id", "20", "16", "-inV", "15"
-            ]
+            "args": [ "visualize", ".\\example\\json.json", "--id", "2", "--inputFormat=json" ]
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Validate",
-            "program": "${workspaceFolder}/lib/validate.js",
+            "program": "${workspaceFolder}/lib/main.js",
             "outFiles": [
 				"${workspaceFolder}/lib/**/*.js"
             ],
             "sourceMaps": true,
-            "args": []
+            "args": [ "validate", ".\\example\\line.json" ]
         }
     ]
 }
