@@ -1,125 +1,90 @@
 
-# About
+# lsif-util
 
-Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blob/master/indexFormat/specification.md) developers. Featuring:
+Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blob/master/indexFormat/specification.md) developers.
 
-* Validation
-* Graph visualization
-* Quick search
+## What's new
 
-# Getting Started
+* _Up to date!_ Support for [JSON Lines](http://jsonlines.org/) with the `--inputFormat` tag
+* _Cleaning up!_ Standard filtering for all tools (no more unnecessary searching)
 
-* `> git clone this repository`
-* `> cd lsif-util`
-* `> npm install`
-* `> npm run compile`
+## What's next
 
-# Validation
+* _We are moving!_ The lsif-util tools will soon migrate to [lsif-node](https://github.com/microsoft/lsif-node)
+* _Getting official!_ Global npm package is on the way
 
-`> node .\lib\validate.js [options]`
+## Installation
 
-| Option            | Default     | Description                                             |
-|-------------------|-------------|---------------------------------------------------------|
-| --inputPath or -p | ./lsif.json | Path to input file (JSON)                               |
+``` bash
+git clone https://github.com/jumattos/lsif-util.git
+cd lsif-util
+npm install
+npm run compile
+```
+
+## Usage
+
+``` bash
+node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdin] [filters]
+```
+
+| Option        | Description                                    | Default |
+|---------------|------------------------------------------------|---------|
+| --inputFormat | Specify input format (choices: "line", "json") | line    |
+| --stdin       | Read from standard input                       | false   |
+
+You can use the `--stdin` flag to **pipe LSIF output**:
+``` bash
+lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
+```
+
+### Validation
 
 Returns whether the LSIF input file is **syntatically** valid or not.
 
 Verifies the following:
 
-* Vertices properties are correct
-* Edges properties are correct
+* Vertex properties are correct
+* Edge properties are correct
 * Vertices are emitted before connecting edges
 * Vertices are used in at least one edge (except metadata)
-* [WIP] Edges exist only between defined vertices
 
-# Graph
-
-`> node .\lib\graph.js [options] targetVertices`
-
-After the options, you should specify one or more `targetVertices`. These are the vertices in your JSON file that you are interested in.
+### Visualization
 
 | Option            | Default     | Description                                             |
 |-------------------|-------------|---------------------------------------------------------|
-| --inputPath or -p | ./lsif.json | Path to input file (JSON)                               |
-| --distance or -d  | 1           | Max distance between any vertex and the target vertices |
-| --verbose or -v   | false       | Display more information about the vertices             |
+| --distance        | 1           | Max distance between any vertex and the filtered input  |
 
-Example:
-`> node .\lib\graph.js -d 2 15`
-
-The output will be a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
+Outputs a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
 
 You can either visualize it online using [Viz.js](http://viz-js.com/) or install [Graphviz](http://graphviz.org/) and pipe it to the DOT tool:
 
-`> node .\lib\graph.js -d 2 15 | dot -Tpng -o image.png`
-
-![graph example](images/graphviz.png)
-
-# Search
-
-`> node .\lib\search.js [options]`
-
-The search has a lot of options, but don't let yourself be intimidated! Most translate to the same idea of listing what you want.
-
-| Option            | Description                                                                             |
-|-------------------|-----------------------------------------------------------------------------------------|
-| --inputPath or -p | Path to input file (JSON)                                                               |
-| -id               | Look for specific ids                                                                   |
-| -inV              | Look for edges entering any of these ids                                                |
-| -outV             | Look for edges leaving any of these ids                                                 |
-| -type             | Look for nodes of any of these types (e.g. vertex, edge)                                |
-| -label            | Look for nodes with any of these labels (e.g. textDocument/definition, referenceResult) |
-| -property         | Look for nodes with any of these properties (e.g. item, contains)                       |
-| -regex            | Look for nodes that fit this regular expression                                         |
-| --idOnly or -i    | Only output ids (without more information)                                              |
-
-You can combine the above options to narrow down what you are looking for. For example, say you have the following code snippet:
-
-```typescript
-class foo {
-    bar(): void {
-        // ...
-    }
-}
+``` bash
+node .\lib\main.js visualize .\example\line.json --distance 2 | dot -Tpng -o image.png
 ```
 
-If you want to find the declaration of `bar`, you can do:
+![graph example](image/graphviz.png)
 
-`> node .\lib\search.js -type vertex -label range -regex bar`
+### Filters
 
-# Combining the tools for best results
+Filters can help you narrow down what you want to validate/visualize. You can filter by some of the most common properties in LSIF. Different values should be separated by **space**. The "regex" filter is a special case that only accepts one value.
 
-Let's say we have this typescript code snippet:
+| Property   | Node        | Example                |
+|------------|-------------|------------------------|
+| --id       | Vertex/Edge | 1 2 3                  |
+| --inV      | Edge        | 1 2 3                  |
+| --outV     | Edge        | 1 2 3                  |
+| --type     | Vertex/Edge | vertex edge            |
+| --label    | Vertex/Edge | project range item     |
+| --property | Edge        | references definitions |
+| --regex    | Vertex/Edge | foo                    |
 
-```typescript
-class foo {
-    bar(): void {
-        // ...
-    }
-}
-
-let a: foo = new foo();
-a.bar();
+Validating outgoing edges from vertices 1, 2 or 3:
+``` bash
+node .\lib\main.js validate .\example\line.json --outV 1 2 3
 ```
 
-We want to check if `a.bar` is pointing to the correct `resultSet`.
-
-It would be nice to see the LSIF graph for `a.bar`, but we don't know its vertex id. We can search for it:
-
-`> node .\lib\search.js -type vertex -label range -regex bar`
-
-This will return two objects: one for the declaration at line 2 and one for the invocation at line 8. Now we have the ids we need to draw the graph!
-
-An option is to use the `--idOnly` flag. We can save the output to a variable:
-
-`> $myIds = node .\lib\search.js -type vertex -label range -regex bar --idOnly`
-
-Now we can run the graph tool passing the ids we found:
-
-`> node .\lib\graph.js $(echo $myIds)`
-
-This is the result:
-
-![graph example](images/bar.png)
-
-The two ranges for bar (22 and 53) point to the same `resultSet`, which is good news!
+Visualizing ranges that have "foo" somewhere in them:
+``` bash
+node .\lib\main.js visualize .\example\line.json --label range --regex foo
+```
