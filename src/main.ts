@@ -35,7 +35,7 @@ function readInput(format: string, path: string, callback: (input: LSIF.Element[
     });
 }
 
-function main(): void {
+export function main(): void {
     yargs
     .usage('Usage: $0 [validate|visualize] [file] --inputFormat=[line|json] [filters]')
 
@@ -96,4 +96,6 @@ function main(): void {
     .argv;
 }
 
-main();
+if (require.main === module) {
+	main();
+}

@@ -3,6 +3,7 @@ import { validate as validateSchema, ValidationError, ValidatorResult } from 'js
 import * as LSIF from 'lsif-protocol';
 import * as TJS from 'typescript-json-schema';
 
+// This relative path doesn't work if we are calling lsif-util globally
 const protocolPath: string = './node_modules/lsif-protocol/lib/protocol.d.ts';
 
 const vertices: { [id: string]: Element } = {};
