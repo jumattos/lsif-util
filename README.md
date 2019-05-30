@@ -45,7 +45,7 @@ Filters can help you narrow down what you want to validate/visualize. You can fi
 | --type     | Vertex/Edge | vertex edge            |
 | --label    | Vertex/Edge | project range item     |
 | --property | Edge        | references definitions |
-| --regex    | Vertex/Edge | none                   |
+| --regex    | Vertex/Edge | foo                    |
 
 Validating outgoing edges from vertices 1, 2 or 3:
 ``` bash
