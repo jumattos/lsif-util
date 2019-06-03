@@ -44,5 +44,8 @@
   },
   "jest": {
     "testRegex": "lib/test/([^/]+)\\.js$"
-  }
+  },
+  "files": [
+    "bin"
+  ]
 }
