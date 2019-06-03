@@ -1,5 +1,6 @@
 import * as fse from 'fs-extra';
 import * as LSIF from 'lsif-protocol';
+import * as path from 'path';
 import { exit } from 'process';
 import * as readline from 'readline';
 import * as yargs from 'yargs';
@@ -7,10 +8,10 @@ import { getFilteredIds, IFilter } from './filter';
 import { validate } from './validate';
 import { visualize } from './visualize';
 
-function readInput(format: string, path: string, callback: (input: LSIF.Element[]) => void): void {
+function readInput(format: string, inputPath: string, callback: (input: LSIF.Element[]) => void): void {
     let inputStream: NodeJS.ReadStream | fse.ReadStream = process.stdin;
-    if (path !== undefined) {
-        inputStream = fse.createReadStream(path);
+    if (inputPath !== undefined) {
+        inputStream = fse.createReadStream(inputPath);
     }
 
     let input: LSIF.Element[] = [];
@@ -35,7 +36,7 @@ function readInput(format: string, path: string, callback: (input: LSIF.Element[
     });
 }
 
-function main(): void {
+export function main(): void {
     yargs
     .usage('Usage: $0 [validate|visualize] [file] --inputFormat=[line|json] [filters]')
 
@@ -47,7 +48,8 @@ function main(): void {
         }),  (argv: yargs.Arguments<{ stdin: boolean; file: string; inputFormat: string }>) => {
             readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, (input: LSIF.Element[]) => {
                 const filter: IFilter = <IFilter> <unknown>argv;
-                exit(validate(input, getFilteredIds(filter, input)));
+                exit(validate(input, getFilteredIds(filter, input),
+                              path.join(path.dirname(process.argv[1]), '../node_modules/lsif-protocol/lib/protocol.d.ts')));
             });
         })
 
@@ -96,4 +98,6 @@ function main(): void {
     .argv;
 }
 
-main();
+if (require.main === module) {
+    main();
+}

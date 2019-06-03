@@ -1,8 +1,8 @@
 {
   "name": "lsif-util",
   "version": "0.1.0",
-  "description": "Utility tools for LSIF",
-  "main": "index.js",
+  "description": "Utility tools for LSIF development.",
+  "main": "./lib/main.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/jumattos/lsif-util.git"
@@ -12,17 +12,24 @@
   },
   "scripts": {
     "test": "jest",
+    "clean": "node ./node_modules/rimraf/bin.js -rf lib",
     "compile": "tsc -p ./",
-    "lint": "tslint --fix ./src/*.ts"
+    "lint": "tslint --fix ./src/*.ts",
+    "prepublishOnly": "npm install && npm run clean && npm run lint && npm run compile && npm run test"
   },
-  "author": "Jullyana Mattos Vycas",
-  "license": "ISC",
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "bin": {
+    "lsif-util": "./bin/lsif-util"
+  },
+  "preferGlobal": true,
   "devDependencies": {
     "@types/fs-extra": "^5.0.5",
     "@types/jest": "^24.0.13",
     "@types/node": "^11.11.0",
     "@types/yargs": "^13.0.0",
     "jest": "^24.8.0",
+    "rimraf": "^2.6.3",
     "tslint": "^5.14.0",
     "tslint-microsoft-contrib": "^6.1.0",
     "typescript": "^3.3.3333"
