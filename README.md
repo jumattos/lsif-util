@@ -5,27 +5,24 @@ Scripts to help [LSIF](https://github.com/Microsoft/language-server-protocol/blo
 
 ## What's new
 
+* _Getting official!_ Global [npm package](https://www.npmjs.com/package/lsif-util) available
 * _Up to date!_ Support for [JSON Lines](http://jsonlines.org/) with the `--inputFormat` tag
 * _Cleaning up!_ Standard filtering for all tools (no more unnecessary searching)
 
 ## What's next
 
 * _We are moving!_ The lsif-util tools will soon migrate to [lsif-node](https://github.com/microsoft/lsif-node)
-* _Getting official!_ Global npm package is on the way
 
 ## Installation
 
 ``` bash
-git clone https://github.com/jumattos/lsif-util.git
-cd lsif-util
-npm install
-npm run compile
+npm install -g lsif-util
 ```
 
 ## Usage
 
 ``` bash
-node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdin] [filters]
+lsif-util [validate|visualize] [file] --inputFormat [line|json] [--stdin] [filters]
 ```
 
 | Option        | Description                                    | Default |
@@ -35,7 +32,7 @@ node .\lib\main.js [validate|visualize] [file] --inputFormat [line|json] [--stdi
 
 You can use the `--stdin` flag to **pipe LSIF output**:
 ``` bash
-lsif-tsc -p .\tsconfig.json | node .\lib\main.js validate --stdin
+lsif-tsc -p .\tsconfig.json | lsif-util validate --stdin
 ```
 
 ### Validation
@@ -60,7 +57,7 @@ Outputs a [DOT](https://graphviz.gitlab.io/_pages/doc/info/lang.html) graph.
 You can either visualize it online using [Viz.js](http://viz-js.com/) or install [Graphviz](http://graphviz.org/) and pipe it to the DOT tool:
 
 ``` bash
-node .\lib\main.js visualize .\example\line.json --distance 2 | dot -Tpng -o image.png
+lsif-util visualize .\example\line.json --distance 2 | dot -Tpng -o image.png
 ```
 
 ![graph example](image/graphviz.png)
@@ -81,10 +78,10 @@ Filters can help you narrow down what you want to validate/visualize. You can fi
 
 Validating outgoing edges from vertices 1, 2 or 3:
 ``` bash
-node .\lib\main.js validate .\example\line.json --outV 1 2 3
+lsif-util validate .\example\line.json --outV 1 2 3
 ```
 
 Visualizing ranges that have "foo" somewhere in them:
 ``` bash
-node .\lib\main.js visualize .\example\line.json --label range --regex foo
+lsif-util visualize .\example\line.json --label range --regex foo
 ```
