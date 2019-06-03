@@ -8,10 +8,10 @@ import { getFilteredIds, IFilter } from './filter';
 import { validate } from './validate';
 import { visualize } from './visualize';
 
-function readInput(format: string, path: string, callback: (input: LSIF.Element[]) => void): void {
+function readInput(format: string, inputPath: string, callback: (input: LSIF.Element[]) => void): void {
     let inputStream: NodeJS.ReadStream | fse.ReadStream = process.stdin;
-    if (path !== undefined) {
-        inputStream = fse.createReadStream(path);
+    if (inputPath !== undefined) {
+        inputStream = fse.createReadStream(inputPath);
     }
 
     let input: LSIF.Element[] = [];
