@@ -3,9 +3,6 @@ import { validate as validateSchema, ValidationError, ValidatorResult } from 'js
 import * as LSIF from 'lsif-protocol';
 import * as TJS from 'typescript-json-schema';
 
-// This relative path doesn't work if we are calling lsif-util globally
-const protocolPath: string = './node_modules/lsif-protocol/lib/protocol.d.ts';
-
 const vertices: { [id: string]: Element } = {};
 const edges: { [id: string]: Element } = {};
 const visited: { [id: string]: boolean } = {};
@@ -60,18 +57,20 @@ class Statistics {
     }
 }
 
-export function validate(toolOutput: LSIF.Element[], ids: string[]): number {
+export function validate(toolOutput: LSIF.Element[], ids: string[], protocolPath: string): number {
     readInput(toolOutput);
 
     checkAllVisited();
 
     if (fse.pathExistsSync(protocolPath)) {
         checkVertices(toolOutput.filter((e : LSIF.Element) => e.type === 'vertex')
-        .map((e: LSIF.Element) => e.id.toString()));
+                      .map((e: LSIF.Element) => e.id.toString()),
+                      protocolPath);
         checkEdges(toolOutput.filter((e : LSIF.Element) => e.type === 'edge')
-        .map((e: LSIF.Element) => e.id.toString()));
+                   .map((e: LSIF.Element) => e.id.toString()),
+                   protocolPath);
     } else {
-        console.warn('Skipping thorough validation: protocol.d.ts was not found');
+        console.warn(`Skipping thorough validation: ${protocolPath} was not found`);
     }
 
     printOutput(ids);
@@ -123,7 +122,7 @@ function checkAllVisited(): void {
     });
 }
 
-function checkVertices(ids: string[]): void {
+function checkVertices(ids: string[], protocolPath: string): void {
     let outputMessage: string;
     const program: TJS.Program = TJS.getProgramFromFiles([protocolPath]);
     const vertexSchema: TJS.Definition = TJS.generateSchema(program, 'Vertex', { required: true });
@@ -171,7 +170,7 @@ function checkVertices(ids: string[]): void {
     }
 }
 
-function checkEdges(ids: string[]): void {
+function checkEdges(ids: string[], protocolPath: string): void {
     let outputMessage: string;
     const program: TJS.Program = TJS.getProgramFromFiles([protocolPath]);
     const edgeSchema: TJS.Definition = TJS.generateSchema(program, 'Edge', { required: true, noExtraProps: true });

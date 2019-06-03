@@ -1,5 +1,6 @@
 import * as fse from 'fs-extra';
 import * as LSIF from 'lsif-protocol';
+import * as path from 'path';
 import { exit } from 'process';
 import * as readline from 'readline';
 import * as yargs from 'yargs';
@@ -47,7 +48,8 @@ export function main(): void {
         }),  (argv: yargs.Arguments<{ stdin: boolean; file: string; inputFormat: string }>) => {
             readInput(argv.inputFormat, argv.stdin ? undefined : argv.file, (input: LSIF.Element[]) => {
                 const filter: IFilter = <IFilter> <unknown>argv;
-                exit(validate(input, getFilteredIds(filter, input)));
+                exit(validate(input, getFilteredIds(filter, input),
+                              path.join(path.dirname(process.argv[1]), '../node_modules/lsif-protocol/lib/protocol.d.ts')));
             });
         })
 
@@ -97,5 +99,5 @@ export function main(): void {
 }
 
 if (require.main === module) {
-	main();
+    main();
 }
