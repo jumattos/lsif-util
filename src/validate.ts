@@ -65,8 +65,10 @@ export function validate(toolOutput: LSIF.Element[], ids: string[]): number {
     checkAllVisited();
 
     if (fse.pathExistsSync(protocolPath)) {
-        checkVertices(toolOutput.filter((e : LSIF.Element) => e.type === 'vertex').map(e => e.id.toString()));
-        checkEdges(toolOutput.filter((e : LSIF.Element) => e.type === 'edge').map(e => e.id.toString()));
+        checkVertices(toolOutput.filter((e : LSIF.Element) => e.type === 'vertex')
+        .map((e: LSIF.Element) => e.id.toString()));
+        checkEdges(toolOutput.filter((e : LSIF.Element) => e.type === 'edge')
+        .map((e: LSIF.Element) => e.id.toString()));
     } else {
         console.warn('Skipping thorough validation: protocol.d.ts was not found');
     }
