@@ -47,5 +47,10 @@
   },
   "files": [
     "bin"
+  ],
+  "keywords": [
+    "lsif",
+    "utility",
+    "tools"
   ]
 }
