@@ -1,6 +1,6 @@
 {
   "name": "lsif-util",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Utility tools for LSIF development.",
   "main": "./lib/main.js",
   "repository": {
@@ -46,7 +46,8 @@
     "testRegex": "lib/test/([^/]+)\\.js$"
   },
   "files": [
-    "bin"
+    "bin",
+    "lib"
   ],
   "keywords": [
     "lsif",
